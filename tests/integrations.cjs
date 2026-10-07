@@ -14,6 +14,10 @@ async function main() {
   try {
     assert.deepEqual(parseReference('Quran 2:255'), { kind: 'quran', surah: 2, start: 255, end: 255 });
     assert.throws(() => parseReference('2:1-10')); assert.throws(() => parseReference('115:1'));
+    global.fetch = async () => { throw new Error('Out-of-coverage lookup must not call the provider'); };
+    process.env.QF_ENV = 'prelive';
+    const outside = await quran.retrieve(resource, parseReference('49:13'));
+    assert.equal(outside.outcome, 'unsupported'); assert.equal(outside.attempts, 0);
     const requests = [];
     global.fetch = async (url, init) => { requests.push([url, init]); return url.includes('oauth2/token') ? Response.json({ access_token: 'fixture-token', expires_in: 3600 }) : Response.json({ verse: { verse_key: '2:255', text_uthmani: 'نص تجريبي', translations: [{ resource_id: 20, text: 'SYNTHETIC translation' }] } }); };
     const result = await quran.retrieve(resource, parseReference('2:255')); assert.equal(result.outcome, 'success'); assert.equal(result.evidence[0].originalText, 'نص تجريبي');

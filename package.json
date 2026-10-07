@@ -2,7 +2,9 @@
   "name": "thabayun",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,11 +13,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/claims.cjs && node tests/groq.cjs && node tests/reuse-evaluation.cjs && node tests/extension.cjs && node tests/integrations.cjs && node tests/evidence-storage.cjs && node tests/production.cjs && node tests/research.cjs",
+    "test": "node tests/claims.cjs && node tests/groq.cjs && node tests/reuse-evaluation.cjs && node tests/extension.cjs && node tests/integrations.cjs && node tests/evidence-storage.cjs && node tests/production.cjs && node tests/research.cjs && node tests/auth.cjs",
     "test:browser": "playwright test",
     "eval:groq": "node tests/evaluate-groq.cjs",
     "build:extension": "node extension/build.cjs",
-    "test:extension": "node tests/extension.cjs"
+    "test:extension": "node tests/extension.cjs",
+    "resources:import": "node scripts/resources.cjs"
   },
   "dependencies": {
     "groq-sdk": "^1.6.0",

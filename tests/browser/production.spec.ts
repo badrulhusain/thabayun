@@ -33,7 +33,7 @@ test('data deletion requires confirmation and surfaces retryable errors', async 
   await button.click();
   await expect(page.getByRole('status')).toContainText('Please retry');
   await button.click();
-  await expect(page.getByRole('status')).toContainText('Server records for this session were deleted.');
+  await expect(page.getByRole('status')).toContainText('Server research records were deleted.');
   await expect(button).toBeDisabled();
   expect(requests).toBe(2);
 });

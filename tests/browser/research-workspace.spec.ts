@@ -47,6 +47,6 @@ test('SYNTHETIC research UI: Arabic detail, notes, edits, revision and copy on n
 });
 test('research endpoints fail closed on the production server without account authentication', async ({ request }) => {
   const response = await request.get('/api/research');
-  expect(response.status()).toBe(503);
-  expect((await response.json()).error.code).toBe('RESEARCH_AUTH_REQUIRED');
+  expect(response.status()).toBe(401);
+  expect((await response.json()).error.code).toBe('AUTH_REQUIRED');
 });

@@ -14,11 +14,11 @@ export default function DataControls() {
       const response = await fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: true }) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error?.message || 'Deletion failed. Please retry.');
-      setMessage('Server records for this session were deleted.');
+      setMessage('Server research records were deleted.');
       if (local) {
         try { await eraseLocalResearch(); }
         catch { throw new Error('Server records were deleted, but local deletion failed. Retry or clear site storage in your browser.'); }
-        setMessage('Server records for this session and local research were deleted.');
+        setMessage('Server research records and local research were deleted.');
       }
       setConfirmed(false);
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Deletion failed. Please retry.'); }

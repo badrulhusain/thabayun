@@ -11,7 +11,9 @@ export async function retrieveApproved(claim: Claim, owner: string, material?: M
   if (material && (material.id !== claim.materialId || material.projectId !== claim.projectId || (material.revision ?? 1) !== claim.materialRevision || material.editedText.slice(claim.start, claim.end) !== claim.excerpt)) throw new ClaimsError('Claim does not match submitted material.');
   const submission = await Submissions.findOneAndUpdate({ owner, materialId: claim.materialId, revision: claim.materialRevision }, { $setOnInsert: { inputType: material?.inputType ?? 'text', submittedText: material?.originalText ?? claim.excerpt, extractedText: material?.editedText ?? claim.excerpt, status: 'retrieving' } }, { upsert: true, new: true });
   await Claims.updateOne({ owner, claimId: claim.id, revision: claim.revision }, { $setOnInsert: { submissionId: String(submission._id), claim, parsedReference: reference } }, { upsert: true });
-  const resources = await Resources.find({ approval: 'approved' }).limit(8).lean() as unknown as Resource[];
+  // Apply provider/collection constraints before the cap; unrelated resources must not crowd out a valid lookup.
+  const resourceFilter = { approval: 'approved', ...(reference ? { provider: reference.kind === 'quran' ? 'quran-foundation' : 'sunnah', ...(reference.kind === 'hadith' ? { providerId: reference.collection } : {}) } : {}) };
+  const resources = await Resources.find(resourceFilter).limit(8).lean() as unknown as Resource[];
   const applicable = resources.filter(r => reference ? r.provider === (reference.kind === 'quran' ? 'quran-foundation' : 'sunnah') && (reference.kind !== 'hadith' || r.providerId === reference.collection) : true);
   const passages: RetrievedPassage[] = [], limitations: string[] = [], attempts: NonNullable<RetrievalRun['attempts']> = [];
   if (!applicable.length) { limitations.push('No applicable approved resources. A reviewer must approve individual resources before retrieval.'); attempts.push({ provider: 'resources', outcome: 'not_configured', limitations: ['Resource approval required.'] }); }
