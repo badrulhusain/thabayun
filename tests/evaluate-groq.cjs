@@ -35,7 +35,10 @@ async function main() {
             const { claim, retrieval } = analysisFixture(fixture), run = await analyzeClaim(claim, retrieval, callModel);
             report.results.push({ model, task: "analyze", fixture: fixture.id, language: fixture.language,
               passed: fixture.expectedSupport.includes(run.support), citationValid: true, assessmentAppropriate: fixture.expectedSupport.includes(run.support), support: run.support, explanation: run.explanation, evidence: run.evidence, telemetry: run.telemetry });
-          } catch (error) { report.results.push({ model, task: "analyze", fixture: fixture.id, language: fixture.language, passed: false, citationValid: error.code === "INVALID_CITATION" ? false : null, errorCode: error.code ?? "VALIDATION_FAILED", telemetry: error.telemetry }); }
+          } catch (error) {
+            if (!fixture.evidence && error.code === 'NO_EVIDENCE') report.results.push({ model: 'none', requestedModel: model, task: 'evidence_guard', fixture: fixture.id, language: fixture.language, passed: true, errorCode: 'NO_EVIDENCE', modelCalled: false });
+            else report.results.push({ model, task: "analyze", fixture: fixture.id, language: fixture.language, passed: false, citationValid: error.code === "INVALID_CITATION" ? false : null, errorCode: error.code ?? "VALIDATION_FAILED", telemetry: error.telemetry });
+          }
         }
       }
     } finally {

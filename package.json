@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "check:production": "node scripts/check-production.cjs",
+    "test:quran": "node scripts/test-quran.cjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",

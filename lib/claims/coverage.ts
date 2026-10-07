@@ -1,0 +1,1 @@
+export const PROVIDER_COVERAGE = 'Source verification uses individually approved Quran Foundation and Sunnah resources. Supply an explicit surah:ayah or collection:hadithNumber reference. Quotation search is not currently supported; coverage depends on resource approval and provider access.';

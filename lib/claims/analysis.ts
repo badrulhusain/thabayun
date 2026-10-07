@@ -37,6 +37,7 @@ export function validateAnalysis(output: unknown, claim: Claim, retrieval: Retri
     promptVersion: ANALYSIS_PROMPT, collectionVersion: retrieval.collectionVersion, createdAt: new Date().toISOString(), status: "complete", personalNote: "" };
 }
 export async function analyzeClaim(claim: Claim, retrieval: RetrievalRun, model: ModelCall, signal?: AbortSignal) {
+  if (!retrieval.passages.length) throw new ClaimsError('Retrieve and select at least one approved source passage before analysis. Check the claim reference, source approval, and provider access. No model request was sent.', 422, 'NO_EVIDENCE');
   const result = await model({ task: "analyze", instructions: ANALYSIS_INSTRUCTIONS + " quotationRelationship may be Possible paraphrase only when cited evidence demonstrates a paraphrase relationship; otherwise use Uncertain or Not applicable. Application code determines exact wording and reference matches.",
     data: { claim: { statement: claim.statement, excerpt: claim.excerpt, type: claim.type, quotation: claim.quotation, speaker: claim.speaker, reference: claim.reference },
       evidence: retrieval.passages.map(p => ({ id: p.id, text: p.text, surroundingContext: p.surroundingContext ?? "", locator: p.locator, source: p.source })), coverage: retrieval.coverage }, schema: analysisSchema }, signal);

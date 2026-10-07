@@ -3,7 +3,14 @@ export default function Page() {
   return (
     <>
       <p className="eyebrow">THE COLLECTION</p>
-      <h1>Curated sources</h1>
+      <h1>Sources and verification coverage</h1>
+      <section className="panel">
+        <h2>Approved provider evidence</h2>
+        <p>Claim verification retrieves individually approved Quran Foundation Arabic, translation, or tafsir resources and Sunnah collection resources. API credentials enable access; a reviewer must separately approve the resource’s edition, language, and provenance before it can be used as evidence.</p>
+        <p>Enter an explicit Quran reference such as 2:255 or a hadith reference such as bukhari:1. Quotation search is not implemented. Enter the submitted wording in the claim’s Explicit quotation field to compare it with retrieved source text. No result is a religious ruling.</p>
+        <p>Quran Foundation prelive testing has limited coverage. For verses outside the test environment’s coverage, use approved production access. If no source is returned, inspect the provider status and approval messages before requesting analysis.</p>
+      </section>
+      <h2>Local demonstration library</h2>
       <p className="intro">
         Ten short excerpts from one historical English translation of Baqarah.
         This starting collection does not cover hadith, jurisprudence, or

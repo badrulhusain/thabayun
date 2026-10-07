@@ -12,6 +12,7 @@ async function execute(request: Request) {
     const body = object(await jsonBody(request)), claim = parseClaim(body.claim);
     if (!Array.isArray(body.passageIds) || body.passageIds.length > 8) throw new ClaimsError("Select up to eight retrieved passages.");
     const ids = [...new Set(body.passageIds.map(id => string(id, 100)))];
+    if (!ids.length) throw new ClaimsError('Retrieve and select at least one approved source passage before analysis. No model request was sent.', 422, 'NO_EVIDENCE');
     const session = await owner();
     const retrieval = await loadRetrieval(claim, session);
     if (ids.some(id => !retrieval.passages.some(p => p.id === id))) throw new ClaimsError("Evidence must be a canonical passage retrieved for this claim.");

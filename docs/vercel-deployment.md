@@ -50,6 +50,10 @@ Review the policies against actual provider contracts, jurisdiction, and [Quran 
 
 ## Validation and launch
 
+To test Quran Foundation credentials directly from `.env.local`, run `npm run test:quran` (Windows PowerShell: `npm.cmd run test:quran`). This read-only smoke test requests a Content API token and verse `1:1` in the configured `QF_ENV`, reporting only HTTP statuses and success/failure. It never prints credentials or tokens, writes database records, or approves resources. A passing credential test does not verify MongoDB persistence or the app's approved-resource workflow.
+
+You can test a specific verse with `npm.cmd run test:quran -- 94:5`. Authentication can succeed while a verse lookup returns 404 in prelive; test access does not establish production coverage. To compare submitted wording in the app, set the claim type to Quran quotation or attribution, enter the submitted wording in Explicit quotation, supply the verse reference, and retrieve from a reviewed, approved Arabic resource. An empty retrieval disables analysis and the API rejects it before any Groq request.
+
 1. Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` with Node 24. Run `npm run check:production` with the intended deployment configuration.
 2. Deploy a Preview with isolated test configuration. Check `/`, `/projects`, `/sources`, `/privacy`, `/terms`, `/data`, and `/logo.svg` on desktop and mobile.
 3. Verify Atlas persistence and indexes. With real provider keys and approved resources, smoke-test OCR, extraction, reference retrieval, and analysis. Fixture tests do not verify live integrations.

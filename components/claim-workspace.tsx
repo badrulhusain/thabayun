@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { repository } from "@/lib/repository";
 import { excerptIssue, outdated } from "@/lib/claims/validation";
 import { compare } from '@/lib/claims/comparison';
+import { PROVIDER_COVERAGE } from '@/lib/claims/coverage';
 import { analysisKey, extractionKey, reusableFinding } from "@/lib/claims/reuse";
 import { claimTypes, type AnalysisRun, type Claim, type Material, type RetrievalRun } from "@/lib/types";
 function retryDelay(header: string | null) { return header ? (/^\d+(\.\d+)?$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now()) : NaN; }
@@ -59,6 +60,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
   }
   async function analyze(force = false) {
     if (!focusedClaim || !retrieval) return;
+    if (!retrieval.passages.some(p => !excluded.includes(p.id))) { setError('Retrieve and select at least one approved source passage before analysis. No model request was sent.'); return; }
     await operation("Analyzing claim", async (signal, token) => {
       const config = await configuration(signal);
       const selectedRetrieval = { ...retrieval, passages: retrieval.passages.filter(p => !excluded.includes(p.id)) };
@@ -81,7 +83,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
   function manual() {
     const excerpt = material.editedText.slice(0, Math.min(10000, material.editedText.length));
     setEditing({ id: crypto.randomUUID(), projectId: material.projectId, materialId: material.id, materialRevision: revision, revision: 1,
-      excerpt, start: 0, end: excerpt.length, statement: "", type: claimTypes[4], quotation: "", speaker: "", reference: "", validationIssue: "", coverageNote: "Coverage is limited to ten historical English Quran translation excerpts." });
+      excerpt, start: 0, end: excerpt.length, statement: "", type: claimTypes[4], quotation: "", speaker: "", reference: "", validationIssue: "", coverageNote: PROVIDER_COVERAGE });
   }
   return <section aria-label="Claim analysis" className="claim-workspace">
     <h3>Claims and evidence analysis</h3>
@@ -138,7 +140,8 @@ export function ClaimWorkspace({ material }: { material: Material }) {
           <h4>Selected claim</h4><p dir="auto">{focusedClaim.statement}</p>
           <small>Material excerpt · characters {focusedClaim.start}–{focusedClaim.end}</small><blockquote dir="auto">{focusedClaim.excerpt}</blockquote>
           <p>Explicit quotation: {focusedClaim.quotation || "Not supplied"}<br />Attributed speaker: {focusedClaim.speaker || "Not supplied"}<br />Reference: {focusedClaim.reference || "Not supplied"}</p>
-          <p>{focusedClaim.coverageNote}</p>
+          <p>{PROVIDER_COVERAGE}</p>
+          {!focusedClaim.reference && <p>Use Edit claim to supply a reference such as 2:255. Enter the wording you want to compare in Explicit quotation.</p>}
           {!retrieval && <p>Select this claim and retrieve evidence before analysis.</p>}
           {retrieval && <>
             <h4>Sources searched</h4><p>{retrieval.coverage}</p><small>{retrieval.collectionVersion} · {new Date(retrieval.searchedAt).toLocaleString()}</small>
@@ -158,8 +161,9 @@ export function ClaimWorkspace({ material }: { material: Material }) {
               <details><summary>Surrounding context</summary><p dir="auto">{p.surroundingContext ?? "Not available locally. Consult the original source."}</p></details>
               <a href={p.source.URL} target="_blank" rel="noopener noreferrer">Original source</a>
             </article>)}
-            <div className="actions"><button disabled={!!busy || focusedClaim.materialRevision !== revision || !!focusedClaim.validationIssue} onClick={() => void analyze()}>Run evidence-based analysis</button>
-              <button className="secondary" disabled={!!busy || focusedClaim.materialRevision !== revision || !!focusedClaim.validationIssue} onClick={() => void analyze(true)}>Run fresh analysis</button></div>
+            {!retrieval.passages.some(p => !excluded.includes(p.id)) && <p role="status">Analysis needs at least one selected source passage. Check the reference, approved resources, and provider status, then retrieve again. No AI request will be sent without evidence.</p>}
+            <div className="actions"><button disabled={!!busy || focusedClaim.materialRevision !== revision || !!focusedClaim.validationIssue || !retrieval.passages.some(p => !excluded.includes(p.id))} onClick={() => void analyze()}>Run evidence-based analysis</button>
+              <button className="secondary" disabled={!!busy || focusedClaim.materialRevision !== revision || !!focusedClaim.validationIssue || !retrieval.passages.some(p => !excluded.includes(p.id))} onClick={() => void analyze(true)}>Run fresh analysis</button></div>
           </>}
         </> : <p>Inspect a claim to see its excerpt, references, and evidence together.</p>}
       </div>
@@ -198,7 +202,7 @@ function ClaimEditor({ claim, material, save, cancel }: { claim: Claim; material
     <label>Explicit quotation<input dir="auto" maxLength={4000} value={draft.quotation} onChange={e => setDraft({ ...draft, quotation: e.target.value })} /></label>
     <label>Attributed speaker<input maxLength={300} value={draft.speaker} onChange={e => setDraft({ ...draft, speaker: e.target.value })} /></label>
     <label>Cited reference<input maxLength={300} value={draft.reference} onChange={e => setDraft({ ...draft, reference: e.target.value })} /></label>
-    <p>Confirm qualifications, negation, and whose view is being reported. Reference lookup uses stored passage IDs or exact locators.</p>
+    <p>Confirm qualifications, negation, and whose view is being reported. For Quran use surah:ayah, such as 2:255; for hadith use collection:hadithNumber, such as bukhari:1. Enter the material’s exact quoted wording in Explicit quotation to enable wording comparison. References are not inferred from quotation text.</p>
     <div className="actions"><button disabled={busy}>Save claim</button><button disabled={busy} type="button" className="secondary" onClick={cancel}>Cancel claim edit</button></div>
   </form>;
 }

@@ -20,6 +20,11 @@ async function main() {
   const run = retrieve(claim);
   assert.equal(compare(claim, run).quotation, "Exact match");
   assert.equal(compare(claim, run).reference, "Resolved and matches the cited passage");
+  // Wording regression from Quran 94:5 (https://quran.com/94/5).
+  const arabicPassage = { ...run.passages[0], id: 'arabic-wording-fixture', locator: '94:5', text: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا' };
+  const arabicRun = { ...run, passages: [arabicPassage] };
+  assert.equal(compare({ ...claim, reference: '94:5', quotation: 'فَإِنَّ مَعَ الْعُسْرِ عُسْرًا' }, arabicRun).quotation, 'Wording differs');
+  assert.equal(compare({ ...claim, reference: '94:5', quotation: arabicPassage.text }, arabicRun).quotation, 'Exact match');
   const wrong = { ...claim, reference: passages[0].id };
   assert.equal(compare(wrong, retrieve(wrong)).reference, "Resolved but mismatched");
   const paraphrase = { ...claim, quotation: "Patience and prayer can provide aid.", reference: "" };
@@ -30,6 +35,9 @@ async function main() {
   const absent = { ...claim, statement: "quantum computing", quotation: "", reference: "" };
   const empty = retrieve(absent);
   assert.equal(empty.passages.length, 0);
+  let emptyModelCalls = 0;
+  await assert.rejects(analyzeClaim(absent, empty, async () => { emptyModelCalls++; return { output: response('Insufficient evidence', []), model: 'mock' }; }), error => error.code === 'NO_EVIDENCE' && error.status === 422);
+  assert.equal(emptyModelCalls, 0, 'An empty retrieval must not spend tokens on a model request');
   assert.equal(validateAnalysis(response("Insufficient evidence", []), absent, empty, "mock-model").support, "Insufficient evidence");
   assert.throws(() => validateAnalysis(response("Supported by retrieved evidence", []), absent, empty, "mock"), /lacks evidence/);
   assert.throws(() => validateAnalysis(response("Supported by retrieved evidence", [{ passageId: "invented", excerpt: "invented", relation: "supporting", directConflict: false }]), claim, run, "mock"), /unknown passage/);
