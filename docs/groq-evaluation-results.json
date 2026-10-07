@@ -1,0 +1,1065 @@
+{
+  "datasetVersion": "groq-bilingual-fixtures-v1",
+  "datasetReview": {
+    "status": "agent-reviewed; independent fluent-Arabic human review pending",
+    "notes": "Annotations were checked sentence by sentence against the exact fixture text. This is a small engineering evaluation, not a scholarly benchmark. Every passage and named speaker below is synthetic test data, never a real curated source. Independent human review of model explanations and assertion fidelity is still required."
+  },
+  "createdAt": "2026-10-05T16:20:52.152Z",
+  "models": [
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b"
+  ],
+  "status": "completed_engineering_evaluation_human_review_pending",
+  "results": [
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "extract",
+      "fixture": "en-negation-question",
+      "language": "English",
+      "expected": 2,
+      "returned": 2,
+      "exactAnnotatedMatches": 0,
+      "validSpans": 0,
+      "exactAnnotationPrecision": 0,
+      "exactAnnotationRecall": 0,
+      "qualificationFailures": 0,
+      "passed": false,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-negation-question",
+          "materialRevision": 1,
+          "id": "aea15150-fcce-4e58-930b-3759411f4375",
+          "revision": 1,
+          "excerpt": "The archive opened in 2001.",
+          "start": 0,
+          "end": 25,
+          "statement": "The archive opened in 2001.",
+          "type": "Historical or general factual claim",
+          "quotation": "The archive opened in 2001.",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        },
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-negation-question",
+          "materialRevision": 1,
+          "id": "462db362-817b-4b78-b5ac-4c5f8ef7c22d",
+          "revision": 1,
+          "excerpt": "It did not open in 1990.",
+          "start": 27,
+          "end": 50,
+          "statement": "It did not open in 1990.",
+          "type": "Historical or general factual claim",
+          "quotation": "It did not open in 1990.",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 439,
+          "outputTokens": 1001,
+          "totalTokens": 1440
+        },
+        "latencyMs": 1831,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:20:53.985Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "needs_correction"
+      },
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "extract",
+      "fixture": "ar-negation-question",
+      "language": "Arabic",
+      "expected": 2,
+      "returned": 2,
+      "exactAnnotatedMatches": 0,
+      "validSpans": 0,
+      "exactAnnotationPrecision": 0,
+      "exactAnnotationRecall": 0,
+      "qualificationFailures": 0,
+      "passed": false,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "ar-negation-question",
+          "materialRevision": 1,
+          "id": "6e7ad021-2caa-415d-b5c4-ae8ac602ddda",
+          "revision": 1,
+          "excerpt": "افتُتح الأرشيف عام 2001.",
+          "start": 0,
+          "end": 22,
+          "statement": "The archive opened in 2001.",
+          "type": "Historical or general factual claim",
+          "quotation": "افتُتح الأرشيف عام 2001.",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        },
+        {
+          "projectId": "evaluation-only",
+          "materialId": "ar-negation-question",
+          "materialRevision": 1,
+          "id": "05b706f2-6393-4be6-9c83-f83c5b8abe5c",
+          "revision": 1,
+          "excerpt": "لم يُفتتح عام 1990.",
+          "start": 24,
+          "end": 41,
+          "statement": "The archive was not opened in 1990.",
+          "type": "Historical or general factual claim",
+          "quotation": "لم يُفتتح عام 1990.",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 444,
+          "outputTokens": 1863,
+          "totalTokens": 2307
+        },
+        "latencyMs": 2440,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:20:56.426Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "needs_correction"
+      },
+      "languageChanged": 2,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "extract",
+      "fixture": "en-attribution-injection",
+      "language": "English",
+      "expected": 1,
+      "returned": 1,
+      "exactAnnotatedMatches": 0,
+      "validSpans": 0,
+      "exactAnnotationPrecision": 0,
+      "exactAnnotationRecall": 0,
+      "qualificationFailures": 0,
+      "passed": false,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-attribution-injection",
+          "materialRevision": 1,
+          "id": "c84b75d2-25ae-4efe-978e-d5983abb5262",
+          "revision": 1,
+          "excerpt": "Researcher A says, 'This interpretation may apply in some cases.'",
+          "start": 55,
+          "end": 119,
+          "statement": "This interpretation may apply in some cases.",
+          "type": "Scholarly attribution",
+          "quotation": "'This interpretation may apply in some cases.'",
+          "speaker": "Researcher A",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 448,
+          "outputTokens": 2282,
+          "totalTokens": 2730
+        },
+        "latencyMs": 3170,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:20:59.597Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "needs_correction"
+      },
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "extract",
+      "fixture": "ar-attribution-injection-utf16",
+      "language": "Arabic",
+      "passed": false,
+      "errorCode": "MODEL_REQUEST_REJECTED",
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-20b",
+        "usage": null,
+        "latencyMs": 7272,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:06.869Z",
+        "status": "provider_error"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "en-supported",
+      "language": "English",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Supported by retrieved evidence",
+      "explanation": "The provided passage directly quotes the exact statement that the fixture archive opened in 2001, which matches the claim verbatim.",
+      "evidence": [
+        {
+          "passageId": "fixture-en-supported",
+          "excerpt": "The fixture archive opened in 2001.",
+          "relation": "supporting",
+          "passageSnapshot": {
+            "id": "fixture-en-supported",
+            "sourceId": "evaluation-source",
+            "text": "The fixture archive opened in 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "English",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "English",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 720,
+          "outputTokens": 758,
+          "totalTokens": 1478
+        },
+        "latencyMs": 1230,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:08.101Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "ar-supported",
+      "language": "Arabic",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Supported by retrieved evidence",
+      "explanation": "The supplied evidence contains the exact Arabic phrase \"افتُتح الأرشيف التجريبي عام 2001.\" which is identical to the claim statement, indicating direct support.",
+      "evidence": [
+        {
+          "passageId": "fixture-ar-supported",
+          "excerpt": "افتُتح الأرشيف التجريبي عام 2001.",
+          "relation": "supporting",
+          "passageSnapshot": {
+            "id": "fixture-ar-supported",
+            "sourceId": "evaluation-source",
+            "text": "افتُتح الأرشيف التجريبي عام 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "Arabic",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "Arabic",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 735,
+          "outputTokens": 427,
+          "totalTokens": 1162
+        },
+        "latencyMs": 712,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:08.814Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "en-insufficient",
+      "language": "English",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Insufficient evidence",
+      "explanation": "The supplied data contains no passages or excerpts that address the claim that every historical report is accurate. Without any retrieved evidence, the claim cannot be evaluated. The lack of evidence prevents any determination of support, contradiction, or partial support. The statement is a general factual claim about the nature of historical reports, but no sources were provided to confirm or refute it.",
+      "evidence": [],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 627,
+          "outputTokens": 379,
+          "totalTokens": 1006
+        },
+        "latencyMs": 615,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:09.429Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "ar-insufficient",
+      "language": "Arabic",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Insufficient evidence",
+      "explanation": "No passages were provided to evaluate the claim that all historical reports are accurate.",
+      "evidence": [],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+          "inputTokens": 629,
+          "outputTokens": 398,
+          "totalTokens": 1027
+        },
+        "latencyMs": 612,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:10.041Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "en-stronger-claim",
+      "language": "English",
+      "passed": false,
+      "citationValid": null,
+      "errorCode": "MODEL_REQUEST_REJECTED",
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": null,
+        "latencyMs": 1025,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:11.066Z",
+        "status": "provider_error"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "task": "analyze",
+      "fixture": "ar-stronger-claim",
+      "language": "Arabic",
+      "passed": false,
+      "citationValid": null,
+      "errorCode": "MODEL_REQUEST_REJECTED",
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-20b",
+        "usage": null,
+        "latencyMs": 820,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:11.886Z",
+        "status": "provider_error"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "extract",
+      "fixture": "en-negation-question",
+      "language": "English",
+      "expected": 2,
+      "returned": 2,
+      "exactAnnotatedMatches": 2,
+      "validSpans": 2,
+      "exactAnnotationPrecision": 1,
+      "exactAnnotationRecall": 1,
+      "qualificationFailures": 0,
+      "passed": true,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-negation-question",
+          "materialRevision": 1,
+          "id": "80692ebb-22f0-4c98-bace-6957076f293d",
+          "revision": 1,
+          "excerpt": "The archive opened in 2001.",
+          "start": 0,
+          "end": 27,
+          "statement": "The archive opened in 2001.",
+          "type": "Historical or general factual claim",
+          "quotation": "",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        },
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-negation-question",
+          "materialRevision": 1,
+          "id": "8bd357ca-04af-4a07-9944-1b751a477e58",
+          "revision": 1,
+          "excerpt": "It did not open in 1990.",
+          "start": 28,
+          "end": 52,
+          "statement": "It did not open in 1990.",
+          "type": "Historical or general factual claim",
+          "quotation": "",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 439,
+          "outputTokens": 946,
+          "totalTokens": 1385
+        },
+        "latencyMs": 2258,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:14.144Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      },
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "extract",
+      "fixture": "ar-negation-question",
+      "language": "Arabic",
+      "expected": 2,
+      "returned": 2,
+      "exactAnnotatedMatches": 2,
+      "validSpans": 1,
+      "exactAnnotationPrecision": 1,
+      "exactAnnotationRecall": 1,
+      "qualificationFailures": 0,
+      "passed": false,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "ar-negation-question",
+          "materialRevision": 1,
+          "id": "503648e1-9b3b-4d29-ac4d-b8b4832a1c2b",
+          "revision": 1,
+          "excerpt": "افتُتح الأرشيف عام 2001.",
+          "start": 0,
+          "end": 24,
+          "statement": "The archive was opened in 2001.",
+          "type": "Historical or general factual claim",
+          "quotation": "",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        },
+        {
+          "projectId": "evaluation-only",
+          "materialId": "ar-negation-question",
+          "materialRevision": 1,
+          "id": "f5ed6eb8-a0be-4891-89bf-c06b38497d31",
+          "revision": 1,
+          "excerpt": "لم يُفتتح عام 1990.",
+          "start": 26,
+          "end": 43,
+          "statement": "It was not opened in 1990.",
+          "type": "Historical or general factual claim",
+          "quotation": "",
+          "speaker": "",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 444,
+          "outputTokens": 1593,
+          "totalTokens": 2037
+        },
+        "latencyMs": 5114,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:19.258Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "needs_correction"
+      },
+      "languageChanged": 2,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "extract",
+      "fixture": "en-attribution-injection",
+      "language": "English",
+      "expected": 1,
+      "returned": 1,
+      "exactAnnotatedMatches": 1,
+      "validSpans": 1,
+      "exactAnnotationPrecision": 1,
+      "exactAnnotationRecall": 1,
+      "qualificationFailures": 0,
+      "passed": true,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "en-attribution-injection",
+          "materialRevision": 1,
+          "id": "e29c97f4-bb96-4413-b0ef-e6fed78fa039",
+          "revision": 1,
+          "excerpt": "Researcher A says, 'This interpretation may apply in some cases.'",
+          "start": 55,
+          "end": 120,
+          "statement": "This interpretation may apply in some cases.",
+          "type": "Scholarly attribution",
+          "quotation": "This interpretation may apply in some cases.",
+          "speaker": "Researcher A",
+          "reference": "",
+          "validationIssue": "",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 448,
+          "outputTokens": 1536,
+          "totalTokens": 1984
+        },
+        "latencyMs": 4607,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:23.865Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      },
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "extract",
+      "fixture": "ar-attribution-injection-utf16",
+      "language": "Arabic",
+      "expected": 1,
+      "returned": 1,
+      "exactAnnotatedMatches": 0,
+      "validSpans": 0,
+      "exactAnnotationPrecision": 0,
+      "exactAnnotationRecall": 0,
+      "qualificationFailures": 0,
+      "passed": false,
+      "claims": [
+        {
+          "projectId": "evaluation-only",
+          "materialId": "ar-attribution-injection-utf16",
+          "materialRevision": 1,
+          "id": "3f5d776a-45c8-4743-b121-89a5e469f481",
+          "revision": 1,
+          "excerpt": "تقول الباحثة أ: «قد ينطبق هذا التفسير في بعض الحالات»",
+          "start": 39,
+          "end": 92,
+          "statement": "قد ينطبق هذا التفسير في بعض الحالات",
+          "type": "Scholarly attribution",
+          "quotation": "قد ينطبق هذا التفسير في بعض الحالات",
+          "speaker": "الباحثة أ",
+          "reference": "",
+          "validationIssue": "Excerpt and offsets do not match saved material. Correct the excerpt before investigating.",
+          "coverageNote": "Current collection: ten English Quran translation excerpts. Hadith, scholarly attributions, Arabic wording, and general facts may be outside coverage."
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "extract",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 458,
+          "outputTokens": 2517,
+          "totalTokens": 2975
+        },
+        "latencyMs": 5535,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:29.400Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "needs_correction"
+      },
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "en-supported",
+      "language": "English",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Supported by retrieved evidence",
+      "explanation": "The retrieved passage (fixture-en-supported) states exactly that the fixture archive opened in 2001, matching the claim verbatim.",
+      "evidence": [
+        {
+          "passageId": "fixture-en-supported",
+          "excerpt": "The fixture archive opened in 2001.",
+          "relation": "supporting",
+          "passageSnapshot": {
+            "id": "fixture-en-supported",
+            "sourceId": "evaluation-source",
+            "text": "The fixture archive opened in 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "English",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "English",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 720,
+          "outputTokens": 685,
+          "totalTokens": 1405
+        },
+        "latencyMs": 1631,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:31.031Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "ar-supported",
+      "language": "Arabic",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Supported by retrieved evidence",
+      "explanation": "The claim that the experimental archive was opened in 2001 is directly matched by the supplied passage, which contains the identical Arabic sentence “افتُتح الأرشيف التجريبي عام 2001.” No contradictory evidence is present, so the claim is supported by the retrieved evidence.",
+      "evidence": [
+        {
+          "passageId": "fixture-ar-supported",
+          "excerpt": "افتُتح الأرشيف التجريبي عام 2001.",
+          "relation": "supporting",
+          "passageSnapshot": {
+            "id": "fixture-ar-supported",
+            "sourceId": "evaluation-source",
+            "text": "افتُتح الأرشيف التجريبي عام 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "Arabic",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "Arabic",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 735,
+          "outputTokens": 548,
+          "totalTokens": 1283
+        },
+        "latencyMs": 1946,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:32.978Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "en-insufficient",
+      "language": "English",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Insufficient evidence",
+      "explanation": "No retrieved passages were provided to evaluate the claim that every historical report is accurate. Without evidence, the claim cannot be supported, contradicted, or contextualized.",
+      "evidence": [],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 627,
+          "outputTokens": 650,
+          "totalTokens": 1277
+        },
+        "latencyMs": 1638,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:34.617Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "ar-insufficient",
+      "language": "Arabic",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Insufficient evidence",
+      "explanation": "No retrieved passages were provided, so the claim that all historical reports are accurate cannot be evaluated against evidence. Without source material, we cannot determine whether the claim is supported, contradicted, or only partially true.",
+      "evidence": [],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 629,
+          "outputTokens": 411,
+          "totalTokens": 1040
+        },
+        "latencyMs": 1126,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:35.743Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "en-stronger-claim",
+      "language": "English",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Partially supported",
+      "explanation": "The claim asserts that every fixture archive opened in 2001, a universal statement. The retrieved passage provides only a single instance: \"One fixture archive opened in 2001.\" This confirms that at least one archive meets the condition, but offers no information about other archives, so the evidence cannot substantiate the universal claim. Consequently the claim is only partially supported by the available evidence.",
+      "evidence": [
+        {
+          "passageId": "fixture-en-stronger-claim",
+          "excerpt": "One fixture archive opened in 2001.",
+          "relation": "supporting",
+          "passageSnapshot": {
+            "id": "fixture-en-stronger-claim",
+            "sourceId": "evaluation-source",
+            "text": "One fixture archive opened in 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "English",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "English",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 724,
+          "outputTokens": 787,
+          "totalTokens": 1511
+        },
+        "latencyMs": 2250,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:37.994Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "task": "analyze",
+      "fixture": "ar-stronger-claim",
+      "language": "Arabic",
+      "passed": true,
+      "citationValid": true,
+      "assessmentAppropriate": true,
+      "support": "Insufficient evidence",
+      "explanation": "The claim asserts that all experimental archives were opened in 2001. The only retrieved passage states that a single experimental archive was opened in 2001, which does not confirm the universal claim and does not provide evidence about any other archives. Therefore the passage neither supports nor directly contradicts the claim, leaving the claim unsupported by the available evidence.",
+      "evidence": [
+        {
+          "passageId": "fixture-ar-stronger-claim",
+          "excerpt": "افتُتح أرشيف تجريبي واحد عام 2001.",
+          "relation": "contextual",
+          "passageSnapshot": {
+            "id": "fixture-ar-stronger-claim",
+            "sourceId": "evaluation-source",
+            "text": "افتُتح أرشيف تجريبي واحد عام 2001.",
+            "locator": "Synthetic test fixture",
+            "tags": [],
+            "source": {
+              "id": "evaluation-source",
+              "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+              "author": "Test author",
+              "sourceType": "Test fixture",
+              "language": "Arabic",
+              "URL": "https://example.com/test-fixture",
+              "reuseTerms": "Synthetic test data"
+            },
+            "score": 0,
+            "method": "keyword",
+            "provenance": "test-fixture"
+          },
+          "citationSnapshot": {
+            "id": "evaluation-source",
+            "title": "SYNTHETIC BILINGUAL TEST FIXTURE — not a real source",
+            "author": "Test author",
+            "sourceType": "Test fixture",
+            "language": "Arabic",
+            "URL": "https://example.com/test-fixture",
+            "reuseTerms": "Synthetic test data"
+          }
+        }
+      ],
+      "telemetry": {
+        "provider": "groq",
+        "task": "analyze",
+        "model": "openai/gpt-oss-120b",
+        "usage": {
+          "inputTokens": 746,
+          "outputTokens": 757,
+          "totalTokens": 1503
+        },
+        "latencyMs": 1783,
+        "attempts": 1,
+        "recordedAt": "2026-10-05T16:21:39.777Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "validationStatus": "valid"
+      }
+    }
+  ],
+  "limitations": [
+    "Independent fluent-Arabic human review is pending.",
+    "Exact annotation matching is a narrow metric; alternative valid claim spans or synonymous qualifications require human review.",
+    "A ten-case synthetic engineering dataset does not establish scholarly, multilingual, or production reliability.",
+    "No accuracy or suitability conclusions can be inferred from mocked tests or model size."
+  ],
+  "observedWeaknesses": [
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "en-negation-question",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 0,
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "ar-negation-question",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 0,
+      "languageChanged": 2,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "en-attribution-injection",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 0,
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "ar-attribution-injection-utf16",
+      "task": "extract",
+      "errorCode": "MODEL_REQUEST_REJECTED"
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "en-stronger-claim",
+      "task": "analyze",
+      "errorCode": "MODEL_REQUEST_REJECTED"
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "fixture": "ar-stronger-claim",
+      "task": "analyze",
+      "errorCode": "MODEL_REQUEST_REJECTED"
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "fixture": "ar-negation-question",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 1,
+      "languageChanged": 2,
+      "attributionAbsentFromStatement": 0
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "fixture": "en-attribution-injection",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 1,
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "fixture": "ar-attribution-injection-utf16",
+      "task": "extract",
+      "qualificationFailures": 0,
+      "validSpans": 0,
+      "languageChanged": 0,
+      "attributionAbsentFromStatement": 1
+    }
+  ],
+  "scoringNotes": [
+    "Arabic-to-English negation was manually checked and preserved; it is not counted as negation loss.",
+    "A translated standalone statement and attribution absent from that statement are separately flagged for human review.",
+    "Original provider error codes were not retained by the first run; MODEL_REQUEST_REJECTED does not establish whether an error came from schema configuration or provider generation."
+  ]
+}

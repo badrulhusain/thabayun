@@ -1,0 +1,13 @@
+[
+  {
+    "id": "qf-uthmani-ar",
+    "provider": "quran-foundation",
+    "providerId": "text_uthmani",
+    "type": "arabic",
+    "title": "Quran Foundation Uthmani Arabic text",
+    "language": "ar",
+    "edition": "Uthmani text (verify provider edition before approval)",
+    "url": "https://quran.com",
+    "approval": "pending"
+  }
+]

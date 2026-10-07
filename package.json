@@ -1,0 +1,36 @@
+{
+  "name": "thabayun",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node tests/claims.cjs && node tests/groq.cjs && node tests/reuse-evaluation.cjs && node tests/extension.cjs && node tests/integrations.cjs && node tests/evidence-storage.cjs",
+    "test:browser": "playwright test",
+    "eval:groq": "node tests/evaluate-groq.cjs",
+    "build:extension": "node extension/build.cjs",
+    "test:extension": "node tests/extension.cjs"
+  },
+  "dependencies": {
+    "groq-sdk": "^1.6.0",
+    "mongoose": "^9.11.0",
+    "next": "16.3.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
