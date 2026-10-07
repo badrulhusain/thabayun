@@ -1,7 +1,12 @@
 import { extractText } from "@/lib/ocr";
+import { assertSameOrigin, readBody, failure } from '@/lib/claims/http';
+import { owner } from '@/lib/integrations/owner';
+import { ClaimsError } from '@/lib/claims/validation';
 export const runtime = "nodejs";
+export const maxDuration = 60;
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     if (Number(request.headers.get("content-length")) > 1100000)
       return Response.json(
         {
@@ -12,7 +17,8 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const form = await request.formData();
+    const bytesBody = await readBody(request, 1100000);
+    const form = await new Response(bytesBody, { headers: { 'Content-Type': request.headers.get('content-type') ?? '' } }).formData();
     const file = form.get("file");
     if (
       !(file instanceof File) ||
@@ -48,16 +54,16 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
+    await owner();
     return Response.json({ text: await extractText(file) });
   } catch (error) {
+    if (error instanceof ClaimsError) return failure(error);
     return Response.json(
       {
         error: {
           code: "OCR_UNAVAILABLE",
           message:
-            error instanceof Error
-              ? error.message
-              : "OCR failed. Please retry.",
+            'OCR failed. Please retry or paste the text.',
         },
       },
       { status: 503 },

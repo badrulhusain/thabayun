@@ -1,9 +1,12 @@
 import { searchCollection } from "@/lib/search";
+import { assertSameOrigin, readBody, failure } from '@/lib/claims/http';
+import { ClaimsError } from '@/lib/claims/validation';
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     if (Number(request.headers.get("content-length")) > 4096)
       throw new Error("Body too large");
-    const raw = await request.text();
+    const raw = new TextDecoder().decode(await readBody(request, 4096));
     if (raw.length > 4096) throw new Error("Body too large");
     const body = JSON.parse(raw);
     if (
@@ -21,7 +24,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     return Response.json({ results: searchCollection(body.query) });
-  } catch {
+  } catch (error) {
+    if (error instanceof ClaimsError) return failure(error);
     return Response.json(
       {
         error: {

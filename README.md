@@ -4,7 +4,9 @@ A Next.js 16 App Router research workspace for collecting material, reviewing in
 
 ## Setup
 
-Use Node.js 20.9+ and npm. Run `npm install` and `npm run dev`, then open http://localhost:3000/projects.
+Use Node.js 24.x and npm. Run `npm ci` and `npm run dev`, then open http://localhost:3000/projects. On Windows with restricted PowerShell script execution, use `npm.cmd`.
+
+For Vercel production configuration, required public operator/contact details, Atlas setup, and Quran Foundation registration URLs, follow [the deployment guide](docs/vercel-deployment.md). Public routes now include `/privacy`, `/terms`, `/data`, and `/logo.svg`. Production paid endpoints use shared MongoDB request budgets and fail closed when protection is unavailable. Older phase notes below describe earlier local-only milestones; the deployment guide and [Phase 4A](docs/phase-4a.md) cover the current server evidence workflow.
 
 Checks: `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
 

@@ -93,6 +93,11 @@ function touch(tx: IDBTransaction, id: string) {
     store.put({ ...r.result, updatedAt: new Date().toISOString() });
   };
 }
+export async function eraseLocalResearch() {
+  await mutate(tx => {
+    for (const name of Array.from(tx.objectStoreNames)) tx.objectStore(name).clear();
+  });
+}
 export const repository: ResearchRepository = {
   list: async () =>
     (await all<Project>("projects")).sort((a, b) =>

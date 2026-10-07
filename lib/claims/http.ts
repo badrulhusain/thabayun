@@ -1,15 +1,23 @@
 import { ClaimsError } from "./validation";
 export async function jsonBody(request: Request) {
+  assertSameOrigin(request);
+  const bytes = await readBody(request, 150000);
+  try { return JSON.parse(new TextDecoder().decode(bytes)); } catch { throw new ClaimsError('Send valid JSON.'); }
+}
+export function assertSameOrigin(request: Request) {
   const origin = request.headers.get('origin');
   if (origin && origin !== new URL(request.url).origin && !allowedExtension(request)) throw new ClaimsError("Cross-origin requests are not allowed.", 403);
-  if (Number(request.headers.get("content-length")) > 150000) throw new ClaimsError("Request too large.", 413);
+  if (!origin && request.headers.get('sec-fetch-site') === 'cross-site') throw new ClaimsError('Cross-origin requests are not allowed.', 403);
+}
+export async function readBody(request: Request, limit: number) {
+  if (Number(request.headers.get("content-length")) > limit) throw new ClaimsError("Request too large.", 413);
   const reader = request.body?.getReader();
   if (!reader) throw new ClaimsError("Send a JSON request.");
   const chunks: Uint8Array[] = []; let size = 0;
   while (true) { const { done, value } = await reader.read(); if (done) break; size += value.length;
-    if (size > 150000) { await reader.cancel(); throw new ClaimsError("Request too large.", 413); } chunks.push(value); }
+    if (size > limit) { await reader.cancel(); throw new ClaimsError("Request too large.", 413); } chunks.push(value); }
   const bytes = new Uint8Array(size); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-  try { return JSON.parse(new TextDecoder().decode(bytes)); } catch { throw new ClaimsError("Send valid JSON."); }
+  return bytes;
 }
 function allowedExtension(request: Request) {
   const origin = request.headers.get('origin') ?? '';

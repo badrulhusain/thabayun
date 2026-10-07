@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Tabayyun AI</title>
+  <rect width="256" height="256" rx="48" fill="#1b4332"/>
+  <path d="M56 66h64v126H56zM136 66h64v126h-64z" fill="#f5ede1"/>
+  <path d="M128 68v130M70 92h36M70 116h36M150 92h36M150 116h36" stroke="#86af99" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="172" cy="169" r="28" fill="#1b4332" stroke="#86af99" stroke-width="6"/>
+  <path d="m192 189 22 22" stroke="#86af99" stroke-width="12" stroke-linecap="round"/>
+</svg>

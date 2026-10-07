@@ -31,7 +31,7 @@ export const quran: Adapter = { capabilities, async retrieve(r, ref) {
       if (r.type === 'translation' || r.type === 'tafsir') { const entries = verse[r.type === 'translation' ? 'translations' : 'tafsirs']; if (!Array.isArray(entries)) throw new Error('Missing text'); text = entries.map(object).find(t => String(t.resource_id) === r.providerId)?.text; }
       evidence.push({ ...base(r, string(text, 50000), key, `https://quran.com/${ref.surah}/${n}`), structuredLocator: { kind: 'quran', surah: ref.surah, start: n, end: n } });
     }
-    return { outcome: 'success', evidence, limitations: ['Prelive covers surahs 1 and 2 only; production requires approved access.'], attempts };
+    return { outcome: 'success', evidence, limitations: process.env.QF_ENV === 'production' ? [] : ['Prelive covers surahs 1 and 2 only; production requires approved access.'], attempts };
   } catch (e) { return { outcome: e instanceof ProviderError ? e.outcome : 'error', evidence, limitations: ['Quran retrieval incomplete or response invalid.'], attempts: attempts + (e instanceof ProviderError ? e.attempts : 0) }; }
 } };
 export const sunnah: Adapter = { capabilities, async retrieve(r, ref) {

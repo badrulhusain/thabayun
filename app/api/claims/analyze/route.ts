@@ -5,6 +5,8 @@ import { analyzeClaim } from "@/lib/claims/analysis";
 import { callModel } from "@/lib/claims/model";
 import { failure, jsonBody, extensionResponse, extensionPreflight } from "@/lib/claims/http";
 export const OPTIONS = extensionPreflight;
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 async function execute(request: Request) {
   try {
     const body = object(await jsonBody(request)), claim = parseClaim(body.claim);
