@@ -35,6 +35,14 @@ export function excerptIssue(text: string, excerpt: string, start: number, end: 
   return start < 0 || end <= start || text.slice(start, end) !== excerpt || end - start !== excerpt.length
     ? "Excerpt and offsets do not match saved material. Correct the excerpt before investigating." : "";
 }
+// Repair model counting mistakes only when the exact original excerpt has one location.
+// Never normalize religious text or choose arbitrarily between repeated occurrences.
+export function resolveExcerptOffsets(text: string, excerpt: string, start: number, end: number) {
+  if (!excerptIssue(text, excerpt, start, end)) return { start, end };
+  const match = excerpt ? text.indexOf(excerpt) : -1;
+  if (match >= 0 && text.indexOf(excerpt, match + 1) === -1) return { start: match, end: match + excerpt.length };
+  return { start, end };
+}
 export function outdated(run: { claimRevision: number; materialRevision: number }, claim: Claim | undefined, materialRevision: number) {
   return !claim || run.claimRevision !== claim.revision || run.materialRevision !== materialRevision;
 }

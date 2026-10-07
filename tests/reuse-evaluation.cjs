@@ -19,7 +19,8 @@ async function main() {
     }) };
     assert.equal(scoreExtraction(fixture, output).passed, true);
     assert.equal(scoreExtraction(fixture, { claims: [] }).passed, false);
-    const wrong = structuredClone(output); wrong.claims[0].start++; assert.equal(scoreExtraction(fixture, wrong).passed, false);
+    const miscounted = structuredClone(output); miscounted.claims[0].start++; assert.equal(scoreExtraction(fixture, miscounted).passed, true);
+    const wrong = structuredClone(output); wrong.claims[0].excerpt = "INVENTED EXCERPT"; assert.equal(scoreExtraction(fixture, wrong).passed, false);
     if (fixture.id.includes("utf16")) assert.ok(output.claims[0].start > [...fixture.text.slice(0, output.claims[0].start)].length, "Emoji requires UTF-16 offset counting");
   }
   const fixture = dataset.analysis[0], { claim, retrieval } = analysisFixture(fixture);
