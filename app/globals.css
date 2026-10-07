@@ -379,3 +379,9 @@ footer { display: flex; justify-content: space-between; gap: 16px; padding: 24px
 .legal-page h2 { margin-top: 28px; font-size: 21px; }
 .legal-page li { margin-bottom: 12px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
+/* Research passages remain readable with Arabic diacritics and mixed references. */
+.research-detail { position: fixed; inset: 6rem 1rem 1rem auto; width: min(42rem, calc(100vw - 2rem)); overflow: auto; z-index: 30; box-shadow: 0 0 0 100vmax #0005; }
+.research-detail .passage { white-space: pre-wrap; line-height: 2.1; }
+.research-detail p, .research-detail a, .panel blockquote { overflow-wrap: anywhere; }
+.panel textarea { max-width: 100%; }
+@media (max-width: 600px) { .research-detail { inset: 1rem; width: auto; } }

@@ -1,0 +1,11 @@
+import 'server-only';
+import mongoose, { Schema } from 'mongoose';
+const text = { type: String, required: true };
+function model(name: string, schema: Schema) { return mongoose.models[name] || mongoose.model(name, schema, name); }
+const project = new Schema({ id: text, owner: text, title: text, question: text, description: String, resourceIds: [String], languages: [String], generationToken: String, generationUntil: Date, revision: { type: Number, default: 0 } }, { timestamps: true });
+project.index({ id: 1 }, { unique: true }); project.index({ owner: 1, updatedAt: -1 });
+const evidence = new Schema({ id: text, owner: text, projectId: text, evidenceId: text, claimId: { type: String, default: '' }, claimSnapshot: Schema.Types.Mixed, proposition: String, relationship: { type: String, enum: ['', 'supports', 'challenges', 'context', 'unclear'], default: '' }, labelAttribution: { type: String, enum: ['unset', 'user', 'ai'], default: 'unset' }, annotation: String, snapshot: Schema.Types.Mixed, source: Schema.Types.Mixed, finding: Schema.Types.Mixed }, { timestamps: true });
+evidence.index({ projectId: 1, evidenceId: 1, claimId: 1 }, { unique: true }); evidence.index({ owner: 1, projectId: 1 });
+const note = new Schema({ id: text, owner: text, projectId: text, author: text, content: text, linkedEvidenceIds: [String] }, { timestamps: true }); note.index({ id: 1 }, { unique: true }); note.index({ owner: 1, projectId: 1 });
+function documentSchema() { const schema = new Schema({ id: text, owner: text, projectId: text, revision: Number, statements: [Schema.Types.Mixed], selectedEvidenceIds: [String], citations: [Schema.Types.Mixed], model: String, promptVersion: String, telemetry: Schema.Types.Mixed, status: String, userEdits: Boolean, question: String, scope: Schema.Types.Mixed }, { timestamps: true }); schema.index({ id: 1 }, { unique: true }); schema.index({ projectId: 1, revision: 1 }, { unique: true }); schema.index({ owner: 1, projectId: 1 }); return schema; }
+export const ResearchProjects = model('projects', project), ProjectEvidence = model('projectEvidence', evidence), ResearchNotes = model('notes', note), Briefs = model('briefs', documentSchema()), Comparisons = model('comparisons', documentSchema());

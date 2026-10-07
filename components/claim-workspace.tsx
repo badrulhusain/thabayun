@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { AddToResearch } from './add-to-research';
 import { repository } from "@/lib/repository";
 import { excerptIssue, outdated } from "@/lib/claims/validation";
 import { compare } from '@/lib/claims/comparison';
@@ -151,6 +152,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
             <h4>Exact-reference matches</h4>
             {!retrieval.passages.some(p => p.method === "exact-reference") && <p>No exact reference retrieved. Use surah:ayah or an official collection:hadithNumber reference. Check resource approval and provider status above.</p>}
             <h4>Retrieved evidence</h4>
+            <AddToResearch evidenceIds={retrieval.passages.filter(p => !excluded.includes(p.id)).map(p => p.id)} claimId={focusedClaim.id} />
             {!retrieval.passages.length && <p>No relevant evidence retrieved. This does not establish that the claim is false.</p>}
             {[...retrieval.passages].sort((a, b) => Number(b.method === "exact-reference") - Number(a.method === "exact-reference")).map(p => <article className="claim-card" key={p.id}>
               <label className="check"><input type="checkbox" checked={!excluded.includes(p.id)} disabled={!!busy} onChange={e => setExcluded(prev => e.target.checked ? prev.filter(id => id !== p.id) : [...prev, p.id])} />Include evidence: {p.id}</label>

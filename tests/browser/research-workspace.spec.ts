@@ -1,0 +1,52 @@
+import { test, expect } from '@playwright/test';
+const sections = ['Research question and scope', 'Main findings', 'Differences in interpretation', 'Limitations and unanswered questions'];
+test('SYNTHETIC research UI: Arabic detail, notes, edits, revision and copy on narrow screens', async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (value: string) => { (window as unknown as { fixtureCopy: string }).fixtureCopy = value; } } }); });
+  const project = { id: 'fixture-project', title: 'SYNTHETIC research project', question: 'What does the selected fixture say?', description: '', resourceIds: [], languages: [] };
+  const evidence = [1,2,3].map(n => ({ id: `fixture-link-${n}`, evidenceId: `fixture-evidence-${n}`, claimId: 'fixture-claim', proposition: 'SYNTHETIC proposition', relationship: '', labelAttribution: 'unset', annotation: '', approved: true, snapshot: { id: `fixture-evidence-${n}`, resourceId: 'fixture-resource', contentHash: `fixture-version-${n}`, originalText: 'نَصٌّ تَجْرِيبِيٌّ لِاخْتِبَارِ الْعَرْضِ '.repeat(40), context: 'SYNTHETIC surrounding context', locator: `fixture:${n}`, sourceUrl: 'https://example.org/fixture', language: 'ar', edition: 'SYNTHETIC edition', retrievedAt: '2026-10-07T00:00:00Z' }, source: { title: `SYNTHETIC source ${n}`, type: 'arabic', author: 'SYNTHETIC author' }, finding: { outcome: 'inconclusive', explanation: 'SYNTHETIC deterministic finding' } }));
+  const state = { project, evidence, notes: [] as { id: string; content: string; linkedEvidenceIds: string[] }[], briefs: [] as Record<string, unknown>[], comparisons: [] };
+  await page.route('**/api/research*', async route => {
+    const request = route.request(), body = request.method() === 'POST' ? request.postDataJSON() : null;
+    if (body?.action === 'note') state.notes.push({ id: 'fixture-note', content: body.content, linkedEvidenceIds: body.linkedEvidenceIds });
+    if (body?.action === 'brief') state.briefs.unshift({ id: `fixture-brief-${state.briefs.length + 1}`, revision: state.briefs.length + 1, statements: sections.map(section => ({ section, text: `SYNTHETIC ${section}`, evidenceIds: body.selectedEvidenceIds, review: 'needs-review' })), selectedEvidenceIds: body.selectedEvidenceIds, citations: evidence, model: 'SYNTHETIC-MODEL', promptVersion: 'fixture', userEdits: false, status: 'draft-needs-review' });
+    if (body?.action === 'editBrief') { const brief = state.briefs.find(b => b.id === body.id)!; brief.statements = body.statements; brief.userEdits = true; }
+    const response = body || request.url().includes('projectId=') ? state : { projects: [project], resources: [] };
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify(response) });
+  });
+  await page.goto('/research');
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Inspect passage, claim and finding' }).first().click();
+  await expect(page.getByRole('region', { name: 'Original evidence detail' })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByText('SYNTHETIC surrounding context')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/research-arabic-mobile.png', fullPage: false });
+  await page.getByRole('button', { name: 'Close passage detail' }).click();
+  await page.getByRole('checkbox', { name: 'SYNTHETIC source 1 · fixture:1', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'SYNTHETIC source 2 · fixture:2', exact: true }).check();
+  await page.getByRole('button', { name: 'Notes', exact: true }).click();
+  await page.getByLabel('Plain-text note').fill('SYNTHETIC researcher emphasis');
+  await page.getByRole('checkbox', { name: 'SYNTHETIC source 1 · fixture:1', exact: true }).check();
+  await page.getByRole('button', { name: 'Save note', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Edit researcher note' })).toBeVisible();
+  await page.getByRole('button', { name: 'Brief', exact: true }).click();
+  await page.getByRole('button', { name: 'Generate first brief' }).click();
+  const draft = page.getByLabel('Main findings · Support needs review');
+  await draft.fill('SYNTHETIC user edited finding');
+  await page.getByRole('button', { name: 'Evidence', exact: true }).click();
+  await page.getByRole('button', { name: 'Brief', exact: true }).click();
+  await expect(draft).toHaveValue('SYNTHETIC user edited finding');
+  await page.getByRole('button', { name: 'Save draft and regenerate new revision', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Revision 2 · AI-generated analysis' })).toBeVisible();
+  expect((state.briefs[1].statements as { text: string }[])[1].text).toBe('SYNTHETIC user edited finding');
+  await page.getByRole('button', { name: 'Copy with sources', exact: true }).first().click();
+  expect(await page.evaluate(() => (window as unknown as { fixtureCopy: string }).fixtureCopy)).toContain('https://example.org/fixture');
+  await page.getByRole('button', { name: 'Source 1: SYNTHETIC source 1', exact: true }).first().click();
+  await expect(page.getByRole('region', { name: 'Original evidence detail' })).toContainText('fixture-version-1');
+  await page.screenshot({ path: 'test-results/research-citation-mobile.png', fullPage: false });
+});
+test('research endpoints fail closed on the production server without account authentication', async ({ request }) => {
+  const response = await request.get('/api/research');
+  expect(response.status()).toBe(503);
+  expect((await response.json()).error.code).toBe('RESEARCH_AUTH_REQUIRED');
+});

@@ -98,6 +98,14 @@ export async function eraseLocalResearch() {
     for (const name of Array.from(tx.objectStoreNames)) tx.objectStore(name).clear();
   });
 }
+// Bridge the existing Phase 4A input/claim UI to a server-backed research project.
+// Existing browser material and claims are never overwritten by this operation.
+export async function ensureVerificationProject(project: Project) {
+  await mutate(tx => {
+    const store = tx.objectStore('projects'), request = store.get(project.id);
+    request.onsuccess = () => { if (!request.result) store.add(project); };
+  });
+}
 export const repository: ResearchRepository = {
   list: async () =>
     (await all<Project>("projects")).sort((a, b) =>

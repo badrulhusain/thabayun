@@ -15,12 +15,13 @@ const db = {
     },
   },
 };
-for (const name of ['Submissions', 'Claims', 'Attempts', 'Retrievals', 'Findings']) db[name] = {
+for (const name of ['Submissions', 'Claims', 'Attempts', 'Retrievals', 'Findings', 'ResearchProjects', 'ProjectEvidence', 'ResearchNotes', 'Briefs', 'Comparisons']) db[name] = {
   deleteMany: async filter => { deletions.push([name, filter]); if (deletionFailure) throw new Error('private failure'); },
 };
 Module._load = function(name, ...args) {
   if (name === 'server-only') return {};
   if (name === './database') return db;
+  if (name === '../research/models') return db;
   return originalLoad.call(this, name, ...args);
 };
 const { consumeQuota } = require('../lib/integrations/quota.ts');
@@ -45,7 +46,7 @@ async function main() {
   await assert.rejects(consumeQuota('owner', now), error => error.status === 503 && !error.message.includes('private'));
   unavailable = false;
   const owner = 'a'.repeat(64); await deleteOwnerData(owner);
-  assert.equal(deletions.length, 5); assert.ok(deletions.every(([, filter]) => filter.owner === owner));
+  assert.equal(deletions.length, 10); assert.ok(deletions.every(([, filter]) => filter.owner === owner));
   await assert.rejects(deleteOwnerData('invalid'), error => error.status === 403);
   deletionFailure = true;
   await assert.rejects(deleteOwnerData(owner), error => error.status === 503 && !error.message.includes('private'));

@@ -189,3 +189,6 @@ For a two-minute demo, perform steps 2–3 with the patience/prayer excerpt and 
 # Phase 4A source integrations
 
 Verification now retrieves approved provider resources and persists evidence in MongoDB Atlas. See [Phase 4A setup, approval workflow, capabilities and limitations](docs/phase-4a.md). The older sections below describe the earlier local demonstration architecture.
+# Phase 4B research workspace
+
+See [Phase 4B setup, storage, demonstration and limits](docs/phase-4b.md). Open `/research` in explicitly enabled local single-user development to collect approved verification evidence, link notes, compare passages and edit cited brief revisions. Research endpoints fail closed in production pending account authentication.
