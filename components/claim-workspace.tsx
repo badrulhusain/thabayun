@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AddToResearch } from './add-to-research';
 import { repository } from "@/lib/repository";
-import { excerptIssue, outdated } from "@/lib/claims/validation";
+import { excerptIssue, resolveExcerptOffsets, outdated } from "@/lib/claims/validation";
 import { compare } from '@/lib/claims/comparison';
 import { PROVIDER_COVERAGE } from '@/lib/claims/coverage';
 import { analysisKey, extractionKey, reusableFinding } from "@/lib/claims/reuse";
@@ -190,15 +190,17 @@ function ClaimEditor({ claim, material, save, cancel }: { claim: Claim; material
   return <form className="panel" aria-label="Edit individual claim" onSubmit={async e => {
     e.preventDefault(); setBusy(true); setError("");
     try {
-      const start = draft.start, end = start + draft.excerpt.length;
+      const { start, end } = resolveExcerptOffsets(material.editedText, draft.excerpt, draft.start, draft.start + draft.excerpt.length);
       const issue = excerptIssue(material.editedText, draft.excerpt, start, end); if (issue) throw new Error(issue);
       if (draft.quotation && !draft.excerpt.includes(draft.quotation)) throw new Error("Explicit quotation must occur verbatim in the material excerpt.");
-      await save({ ...draft, end, materialRevision: material.revision ?? 1, revision: claim.statement ? claim.revision + 1 : 1, validationIssue: "" });
+      await save({ ...draft, start, end, materialRevision: material.revision ?? 1, revision: claim.statement ? claim.revision + 1 : 1, validationIssue: "" });
     } catch (e) { setError(String(e)); } finally { setBusy(false); }
   }}>
     <h4>Review individual claim</h4>{error && <p role="alert">{error}</p>}
     <label>Standalone claim statement<textarea dir="auto" required maxLength={2000} value={draft.statement} onChange={e => setDraft({ ...draft, statement: e.target.value })} /></label>
     <label>Exact material excerpt<textarea dir="auto" required maxLength={10000} value={draft.excerpt} onChange={e => { const excerpt = e.target.value, index = material.editedText.indexOf(excerpt); setDraft({ ...draft, excerpt, start: index >= 0 ? index : draft.start }); }} /></label>
+    <p>The excerpt must be copied exactly from your saved material. Its position is corrected automatically when there is one exact match.</p>
+    <button type="button" className="secondary" disabled={busy} onClick={() => setDraft({ ...draft, excerpt: material.editedText.slice(0, 10000), start: 0 })}>Use original saved text as excerpt</button>
     <label>Excerpt start offset (UTF-16)<input type="number" min={0} max={material.editedText.length} value={draft.start} onChange={e => setDraft({ ...draft, start: Number(e.target.value) })} /></label>
     <label>Claim type<select value={draft.type} onChange={e => setDraft({ ...draft, type: e.target.value as Claim["type"] })}>{claimTypes.map(t => <option key={t}>{t}</option>)}</select></label>
     <label>Explicit quotation<input dir="auto" maxLength={4000} value={draft.quotation} onChange={e => setDraft({ ...draft, quotation: e.target.value })} /></label>
