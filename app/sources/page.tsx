@@ -1,9 +1,11 @@
 import { sources, passages } from "@/lib/collection";
+import { ServiceStatus } from '@/components/service-status';
 export default function Page() {
   return (
     <>
       <p className="eyebrow">THE COLLECTION</p>
       <h1>Sources and verification coverage</h1>
+      <ServiceStatus />
       <section className="panel">
         <h2>Approved provider evidence</h2>
         <p>Claim verification retrieves individually approved Quran Foundation Arabic, translation, or tafsir resources and Sunnah collection resources. API credentials enable access; a reviewer must separately approve the resource’s edition, language, and provenance before it can be used as evidence.</p>

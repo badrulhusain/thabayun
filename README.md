@@ -1,6 +1,8 @@
-# TABAYYUN AI — Phase 3
+# TABAYYUN AI — Phase 5 submission readiness
 
 A Next.js 16 App Router research workspace for collecting material, reviewing individual claims, retrieving curated evidence, and saving grounded analysis with a revision history. Phase 1 projects, materials, source search, evidence, and notes remain available.
+
+See [Phase 5: release checklist and current capabilities](docs/phase-5.md). Account sign-in now enables the MongoDB research workspace in production. Live services still require operator configuration and reviewed resources.
 
 ## Setup
 
@@ -34,7 +36,7 @@ Evidence contains copies of the passage and citation, preserving meaning if the 
 
 ## Persistence limitations
 
-Projects are **Saved on this device.** There is no authentication, database, cloud synchronization, or backup. Storage belongs to the browser profile and site origin. Clearing site data, private browsing, eviction, or using another browser/device/origin may lose access. Errors are shown visibly. Screenshots are not retained; original and edited text are retained. Shared browser profiles share local projects.
+Projects are **Saved on this device.** These legacy local projects are separate from account-backed MongoDB research projects at `/research`. They have no cloud synchronization or backup. Storage belongs to the browser profile and site origin. Clearing site data, private browsing, eviction, or using another browser/device/origin may lose access. Errors are shown visibly. Screenshots are not retained; original and edited text are retained. Shared browser profiles share local projects.
 
 ## Sources and import path
 
@@ -191,4 +193,4 @@ For a two-minute demo, perform steps 2–3 with the patience/prayer excerpt and 
 Verification now retrieves approved provider resources and persists evidence in MongoDB Atlas. See [Phase 4A setup, approval workflow, capabilities and limitations](docs/phase-4a.md). The older sections below describe the earlier local demonstration architecture.
 # Phase 4B research workspace
 
-See [Phase 4B setup, storage, demonstration and limits](docs/phase-4b.md). Open `/research` in explicitly enabled local single-user development to collect approved verification evidence, link notes, compare passages and edit cited brief revisions. Research endpoints fail closed in production pending account authentication.
+See [Phase 4B setup, storage, demonstration and limits](docs/phase-4b.md). Sign in at `/account`, then open `/research` to collect approved verification evidence, link notes, compare passages and edit cited brief revisions. See Phase 5 for account setup and remaining limitations.

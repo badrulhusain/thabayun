@@ -4,9 +4,9 @@ The `/research` workspace uses the existing MongoDB Atlas connection and Groq ad
 
 ## Setup and access
 
-Set `TABAYYUN_RESEARCH_SINGLE_USER=true` in your private local environment, then run `npm run dev` and open `http://localhost:3000/research`. Existing `MONGODB_URI`, `MONGODB_DB`, `GROQ_API_KEY`, model settings, provider credentials and reviewed resources apply. No new credential or provider is introduced. No secrets were modified by implementation.
+Configure `MONGODB_URI` and `MONGODB_DB`, open `/account`, and create an account before retrieving evidence. Sign-in enables `/research` in production. Existing Groq/provider credentials and individually reviewed resources are still needed for generation/retrieval. See [Phase 5](phase-5.md) for the release checklist.
 
-There is no account login in this repository. Research API access is explicitly restricted to local single-user development, requires the opt-in flag, and is disabled in production even if the flag is set. The existing server-issued HttpOnly bearer cookie isolates records and verifies access. Run only on your own trusted development machine. Clearing that cookie loses access; it is not account authentication. A real authenticated server identity must replace this development guard before deployment.
+The optional `TABAYYUN_RESEARCH_SINGLE_USER=true` bypass is restricted to localhost development. It never authorizes an unauthenticated production request. Guest records are not migrated into accounts; retrieve their evidence again after sign-in.
 
 ## Storage and behavior
 
@@ -37,4 +37,4 @@ The editor uses plain textareas. Citation IDs remain separate from display numbe
 
 `node tests/research.cjs` exercises labelled synthetic evidence with mocked database/model boundaries: ownership, idempotent collection, versions, note associations, comparison and citation validation, malformed/timeout recovery, empty/foreign evidence, approval revocation, generation locking, edit/revision preservation, unlinking shared evidence and reopen. `tests/browser/research-workspace.spec.ts` uses labelled mocked API responses for narrow-screen Arabic, note linking, draft state across views, regeneration and interactive citations; it is not a live end-to-end demonstration. `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` are the regression checks.
 
-Live retrieval/Atlas/model behavior requires configured credentials, network access and reviewed resources; fixture tests cannot establish it. Existing Turath and Parse adapter limitations remain. Document/PDF input is not supported by Phase 4A; text and screenshot OCR are reused. Collaboration, semantic search, autonomous loops, rich-text editing, PDF export and extension changes are deferred. Notes and drafts must be saved before leaving the project; the browser warns on page unload with an edited brief. Authenticated multi-user deployment remains deliberately blocked.
+Live retrieval/Atlas/model behavior requires configured credentials, network access and reviewed resources; fixture tests cannot establish it. Existing Turath and Parse adapter limitations remain. Document/PDF input is not supported by Phase 4A; text and screenshot OCR are reused. Collaboration, semantic search, autonomous loops, rich-text editing, PDF export and extension changes are deferred. Notes and drafts must be saved before leaving the project; the browser warns on page unload with an edited brief. Account authentication is implemented in Phase 5; password recovery and collaboration remain unavailable.

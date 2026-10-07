@@ -2,7 +2,7 @@
 // No public resource approval route. Never run with unreviewed input.
 const fs = require('node:fs');
 const mongoose = require('mongoose');
-process.loadEnvFile?.('.env.local');
+if (fs.existsSync('.env.local')) process.loadEnvFile?.('.env.local');
 async function main() {
   const filename = process.argv[2]; if (!filename) throw new Error('Usage: node scripts/resources.cjs <reviewed-resources.json>');
   const resources = JSON.parse(fs.readFileSync(filename, 'utf8'));

@@ -17,6 +17,7 @@ function base(r: Resource, text: string, locator: string, url: string): Evidence
 export const quran: Adapter = { capabilities, async retrieve(r, ref) {
   if (!process.env.QF_CLIENT_ID || !process.env.QF_CLIENT_SECRET) return { outcome: 'not_configured', evidence: [], limitations: ['Quran Foundation credentials missing.'], attempts: 0 };
   if (ref?.kind !== 'quran') return { outcome: 'unsupported', evidence: [], limitations: ['Explicit numeric surah:ayah reference required; quotation search is not enabled.'], attempts: 0 };
+  if (process.env.QF_ENV !== 'production' && ref.surah > 2) return { outcome: 'unsupported', evidence: [], limitations: ['This deployment uses Quran Foundation prelive, which contains only surahs 1 and 2. This is a coverage limit, not a missing Quran verse. Approved production access is required for this reference.'], attempts: 0 };
   const evidence: Evidence[] = []; let attempts = 0;
   try {
     for (let n = ref.start; n <= ref.end; n++) {

@@ -32,7 +32,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
   useEffect(() => {
     let active = true;
     Promise.all([repository.claims(material.projectId), repository.retrievals(material.projectId), repository.analyses(material.projectId)])
-      .then(([c, r, a]) => { if (active) { setClaims(c.filter(c => c.materialId === material.id)); setRetrievals(r.filter(r => c.some(c => c.id === r.claimId && c.materialId === material.id))); setHistory(a.filter(a => a.materialId === material.id)); setLoaded(true); } })
+      .then(([c, r, a]) => { if (active) { setClaims(c.filter(c => c.materialId === material.id)); setFocused(c.find(c => c.materialId === material.id)?.id ?? ""); setRetrievals(r.filter(r => c.some(c => c.id === r.claimId && c.materialId === material.id))); setHistory(a.filter(a => a.materialId === material.id)); setLoaded(true); } })
       .catch(e => { if (active) setError(String(e)); });
     return () => { active = false; controller.current?.abort(); };
   }, [material.id, material.projectId, loadAttempt]);
