@@ -6,10 +6,11 @@ export default function Page() {
       <p className="eyebrow">THE COLLECTION</p>
       <h1>Sources and verification coverage</h1>
       <ServiceStatus />
+      <section className="panel"><h2>Fiqh corpus milestone</h2><p>A pinned OpenITI release of <span lang="ar" dir="rtl">فتح المعين</span> is available for authenticated local search and passage viewing. It remains an unapproved preview until human review.</p><a href="/library">Open the local OpenITI viewer</a></section>
       <section className="panel">
         <h2>Approved provider evidence</h2>
-        <p>Claim verification retrieves individually approved Quran Foundation Arabic, translation, or tafsir resources and Sunnah collection resources. API credentials enable access; a reviewer must separately approve the resource’s edition, language, and provenance before it can be used as evidence.</p>
-        <p>Enter an explicit Quran reference such as 2:255 or a hadith reference such as bukhari:1. Quotation search is not implemented. Enter the submitted wording in the claim’s Explicit quotation field to compare it with retrieved source text. No result is a religious ruling.</p>
+        <p>Claim verification retrieves individually approved Quran Arabic, translation, word-by-word, mutashabihat, tafsir, and hadith resources from configured providers including UmmahAPI. API credentials enable access; a reviewer must separately approve the resource’s edition, language, and provenance before it can be used as evidence.</p>
+        <p>Enter an explicit Quran reference such as 2:255 or a hadith reference such as bukhari:1. Approved Turath and OpenITI books support bounded quotation search. Enter the submitted wording in the claim’s Explicit quotation field; local OpenITI search remains available if Turath is down. No result is a religious ruling.</p>
         <p>Quran Foundation prelive testing has limited coverage. For verses outside the test environment’s coverage, use approved production access. If no source is returned, inspect the provider status and approval messages before requesting analysis.</p>
       </section>
       <h2>Local demonstration library</h2>

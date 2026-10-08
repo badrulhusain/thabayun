@@ -22,6 +22,7 @@ export function InvestigationDesk() {
   const [file, setFile] = useState<File>();
   const [preview, setPreview] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [ocrLanguage, setOcrLanguage] = useState<"ara" | "eng" | "auto">("ara");
   const fileInput = useRef<HTMLInputElement>(null);
   async function selectFile(next?: File) {
     if (!next || busy) return;
@@ -36,7 +37,7 @@ export function InvestigationDesk() {
     if (!file) return;
     setBusy(true); setError("");
     try {
-      const body = new FormData(); body.append("file", file);
+      const body = new FormData(); body.append("file", file); body.append("language", ocrLanguage);
       const response = await fetch("/api/ocr", { method: "POST", body });
       const data = await response.json();
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : data.error?.message ?? "Text extraction failed.");
@@ -73,7 +74,7 @@ export function InvestigationDesk() {
         <button role="tab" disabled={busy} aria-selected={mode === "upload"} aria-controls="desk-input" onClick={() => setMode("upload")} className={mode === "upload" ? "active" : ""}>▧ &nbsp; Upload Image</button>
       </div><span className="desk-scope">Corpus scope: <Link href="/sources">View available sources ↗</Link></span></div>
       <div id="desk-input" role="tabpanel">
-        {mode === "upload" && <div className="desk-dropzone" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); void selectFile(e.dataTransfer.files[0]); }}><span className="upload-symbol" aria-hidden="true">↑</span><h2>Select or drop a manuscript scan or screenshot</h2><p>PNG or JPEG · Maximum 1 MB · English OCR via OCR.space. Review extracted text before investigating.</p><input ref={fileInput} aria-label="Upload research image" type="file" accept="image/png,image/jpeg" onChange={e => void selectFile(e.target.files?.[0])} hidden /><button className="secondary" disabled={busy} onClick={() => fileInput.current?.click()}>Browse local files</button>{file && <><p>{file.name}</p>{preview && <Image className="preview" src={preview} width={640} height={280} unoptimized alt="Selected manuscript or screenshot" />}<div className="actions"><button disabled={busy} onClick={() => void extract()}>{busy ? "Extracting…" : "Extract text"}</button></div></>}</div>}
+        {mode === "upload" && <div className="desk-dropzone" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); void selectFile(e.dataTransfer.files[0]); }}><span className="upload-symbol" aria-hidden="true">↑</span><h2>Select or drop a manuscript scan or screenshot</h2><p>PNG or JPEG · Maximum 1 MB · Arabic or English OCR via OCR.space. Review extracted text before investigating.</p><label>Text language<select aria-label="OCR language" value={ocrLanguage} disabled={busy} onChange={e => setOcrLanguage(e.target.value as "ara" | "eng" | "auto")}><option value="ara">Arabic</option><option value="eng">English</option><option value="auto">Detect automatically</option></select></label><input ref={fileInput} aria-label="Upload research image" type="file" accept="image/png,image/jpeg" onChange={e => void selectFile(e.target.files?.[0])} hidden /><button className="secondary" disabled={busy} onClick={() => fileInput.current?.click()}>Browse local files</button>{file && <><p>{file.name}</p>{preview && <Image className="preview" src={preview} width={640} height={280} unoptimized alt="Selected manuscript or screenshot" />}<div className="actions"><button disabled={busy} onClick={() => void extract()}>{busy ? "Extracting…" : "Extract text"}</button></div></>}</div>}
         <label className="desk-input-label" htmlFor="inquiry">{mode === "upload" ? "Review and edit extracted text" : "Your quotation or research claim"}</label>
         <textarea id="inquiry" className="desk-textarea" dir="auto" maxLength={30000} disabled={busy} value={text} onChange={e => { setText(e.target.value); setConfirmed(false); }} placeholder="Paste a claim, quotation, hadith wording, or excerpt in Arabic or English…" />
         <label className="desk-input-label" htmlFor="reference">Known reference (optional)</label><input id="reference" value={reference} disabled={busy} maxLength={300} onChange={e => setReference(e.target.value)} placeholder="1:1, 2:255 or bukhari:1" /><p className="desk-input-label">A known reference creates a claim without AI extraction. Live quotation search is not yet available. <Link href="/sources">Check available sources</Link>.</p><div className="desk-input-meta"><span>Arabic / English · {text.length.toLocaleString()} characters</span><button onClick={() => { setText(""); setReference(""); setConfirmed(false); }} disabled={busy || !text}>⌫ &nbsp; Clear</button></div>

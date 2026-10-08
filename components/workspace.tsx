@@ -47,6 +47,7 @@ export function Workspace({ projectId }: { projectId: string }) {
   const [file, setFile] = useState<File>();
   const [preview, setPreview] = useState("");
   const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrLanguage, setOcrLanguage] = useState<"ara" | "eng" | "auto">("ara");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Result[]>([]);
   const [searched, setSearched] = useState(false);
@@ -153,6 +154,7 @@ export function Workspace({ projectId }: { projectId: string }) {
       if (token !== generation.current) return;
       const form = new FormData();
       form.set("file", upload);
+      form.set("language", ocrLanguage);
       const response = await fetch("/api/ocr", {
         method: "POST",
         body: form,
@@ -288,10 +290,18 @@ export function Workspace({ projectId }: { projectId: string }) {
             {tab === "screenshot" && (
               <>
                 <p>
-                  English OCR. JPEG, PNG, or WebP, up to 1 MB. Extraction sends
+                  Arabic or English OCR. JPEG, PNG, or WebP, up to 1 MB. Extraction sends
                   your image to OCR.space; raw screenshots are not saved in your
                   project.
                 </p>
+                <label>
+                  Text language
+                  <select aria-label="OCR language" value={ocrLanguage} disabled={ocrBusy} onChange={(e) => setOcrLanguage(e.target.value as "ara" | "eng" | "auto")}>
+                    <option value="ara">Arabic</option>
+                    <option value="eng">English</option>
+                    <option value="auto">Detect automatically</option>
+                  </select>
+                </label>
                 <label>
                   Screenshot
                   <input

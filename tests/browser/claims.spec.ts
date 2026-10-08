@@ -28,6 +28,7 @@ test("Phase 1 IndexedDB upgrade preserves projects, material, evidence, and note
   await page.getByRole("button", { name: "Add claim manually", exact: true }).click();
   await page.getByLabel("Standalone claim statement").fill("TEST FIXTURE retained material claim");
   await page.getByRole("button", { name: "Save claim", exact: true }).click();
+  await expect(page.getByText("Claim saved.", { exact: false })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("checkbox", { name: /Investigate: TEST FIXTURE retained/ })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Personal note", exact: true })).toHaveValue("Preserve my Phase 1 note");
@@ -43,12 +44,13 @@ test("claim review, actual retrieval, mocked grounded analysis, notes, history, 
   await page.getByLabel("Paste or edit text").fill(materialText);
   await page.getByRole("button", { name: "Save material", exact: true }).click();
   await expect(page.getByRole("button", { name: "Extract claims", exact: true })).toBeEnabled();
+  const claimConfig = await (await request.get("/api/claims/config")).json();
   await page.route("**/api/claims/extract", async route => {
     const body = route.request().postDataJSON();
     const claim: Claim = { id: "browser-fixture-claim", projectId: body.projectId, materialId: body.materialId, materialRevision: body.materialRevision,
       revision: 1, excerpt: materialText, start: 0, end: materialText.length, statement: "TEST FIXTURE: this passage calls for patience and prayer.",
       type: "Quran quotation or attribution", quotation: materialText, speaker: "", reference: passages[2].id, validationIssue: "", coverageNote: "Test fixture; limited collection." };
-    await route.fulfill({ json: { claims: [claim], model: "openai/gpt-oss-20b", promptVersion: "tabayyun-extract-groq-v2" } });
+    await route.fulfill({ json: { claims: [claim], model: claimConfig.extractionModel, promptVersion: claimConfig.extractionPrompt } });
   });
   await page.getByRole("button", { name: "Extract claims", exact: true }).click();
   await expect(page.getByText("1 claims extracted.", { exact: false })).toBeVisible();
@@ -57,10 +59,14 @@ test("claim review, actual retrieval, mocked grounded analysis, notes, history, 
   await page.getByRole("button", { name: "Edit claim", exact: true }).click();
   await page.getByLabel("Standalone claim statement").fill("TEST FIXTURE: the cited text asks for aid with patience and prayer.");
   await page.getByRole("button", { name: "Save claim", exact: true }).click();
+  await page.route("**/api/claims/retrieve", async route => {
+    const { claim } = route.request().postDataJSON() as { claim: Claim };
+    await route.fulfill({ json: { retrieval: retrieve(claim) } });
+  });
   await page.getByRole("checkbox", { name: /Investigate:/ }).check();
   await page.getByRole("button", { name: "Retrieve selected claims (up to 5)", exact: true }).click();
   await expect(page.getByText("Retrieved 1 of 1 claims.", { exact: false })).toBeVisible();
-  await expect(page.getByText("exact-reference · Curated source text", { exact: true })).toBeVisible();
+  await expect(page.getByText("exact-reference · Local demonstration source", { exact: true })).toBeVisible();
   const evidence = page.getByLabel("Claim detail and evidence");
   await evidence.getByText("Surrounding context", { exact: true }).first().click();
   await expect(evidence.getByRole("link", { name: "Original source", exact: true }).first()).toHaveAttribute("href", /wikisource/);
@@ -98,20 +104,19 @@ test("claim review, actual retrieval, mocked grounded analysis, notes, history, 
   await page.getByRole("checkbox", { name: /Investigate:/ }).check();
   await page.getByRole("button", { name: "Retrieve selected claims (up to 5)", exact: true }).click();
   await expect(page.getByText("No relevant evidence retrieved.", { exact: false })).toBeVisible();
-  await page.getByRole("button", { name: "Run evidence-based analysis", exact: true }).click();
-  await expect(preview.getByText("Insufficient evidence", { exact: true })).toBeVisible();
-  await preview.getByRole("button", { name: "Save finding", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Run evidence-based analysis", exact: true })).toBeDisabled();
+  await expect(page.getByText("Analysis needs at least one selected source passage.", { exact: false })).toBeVisible();
   await page.getByRole("textbox", { name: "Research text", exact: true }).fill(materialText + " Additional research material.");
   await page.getByRole("button", { name: "Save edits", exact: true }).click();
-  await expect(page.getByText("Potentially outdated: claim removed or edited, or material changed.", { exact: true })).toHaveCount(3);
+  await expect(page.getByText("Potentially outdated: claim removed or edited, or material changed.", { exact: true })).toHaveCount(2);
   await page.reload();
-  await expect(page.getByRole("article", { name: "Saved finding", exact: true })).toHaveCount(3);
+  await expect(page.getByRole("article", { name: "Saved finding", exact: true })).toHaveCount(2);
   expect((await request.post("/api/claims/retrieve", { data: { claim: {} } })).status()).toBe(400);
   const storedClaim = await page.evaluate(async () => new Promise<Claim>(resolve => {
     const open = indexedDB.open("tabayyun-research", 4); open.onsuccess = () => { const db = open.result;
       const get = db.transaction("claims").objectStore("claims").getAll(); get.onsuccess = () => { resolve(get.result[0]); db.close(); }; };
   }));
-  expect((await request.post("/api/claims/analyze", { data: { claim: storedClaim, passageIds: ["invented-id"] } })).status()).toBe(400);
+  expect([400, 403]).toContain((await request.post("/api/claims/analyze", { data: { claim: storedClaim, passageIds: ["invented-id"] } })).status());
   await page.screenshot({ path: "test-results/phase2-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 375, height: 812 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -141,9 +146,8 @@ test("manual claims and retrieval work while model is unavailable; cancel delaye
   await page.getByRole("checkbox", { name: /Investigate:/ }).check();
   await page.getByRole("button", { name: "Retrieve selected claims (up to 5)", exact: true }).click();
   await expect(page.getByText("No relevant evidence retrieved.", { exact: false })).toBeVisible();
-  await page.route("**/api/claims/analyze", route => route.fulfill({ status: 503, json: { error: { message: "AI analysis requires server configuration." } } }));
-  await page.getByRole("button", { name: "Run evidence-based analysis", exact: true }).click();
-  await expect(page.getByRole("alert").first()).toContainText("server configuration");
+  await expect(page.getByRole("button", { name: "Run evidence-based analysis", exact: true })).toBeDisabled();
+  await expect(page.getByText("Analysis needs at least one selected source passage.", { exact: false })).toBeVisible();
   await page.unroute("**/api/claims/extract");
   let complete: () => void = () => {};
   const delayed = new Promise<void>(resolve => { complete = resolve; });

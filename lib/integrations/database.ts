@@ -9,7 +9,7 @@ export async function connect() {
   return state.tabayyunMongo;
 }
 const required = { type: String, required: true };
-const resourceSchema = new Schema({ id: required, provider: { ...required, enum: ['quran-foundation', 'sunnah', 'turath', 'parse'] }, providerId: required, type: { ...required, enum: ['arabic', 'translation', 'tafsir', 'hadith', 'book'] }, title: required, language: required, url: required, author: String, translator: String, editor: String, edition: required, approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, reviewer: String, reviewedAt: Date, reviewNotes: String }, { timestamps: true });
+const resourceSchema = new Schema({ id: required, provider: { ...required, enum: ['quran-foundation', 'sunnah', 'ummah', 'turath', 'openiti', 'parse'] }, providerId: required, type: { ...required, enum: ['arabic', 'translation', 'tafsir', 'word-by-word', 'mutashabihat', 'hadith', 'book'] }, title: required, language: required, url: required, author: String, translator: String, editor: String, edition: required, approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, reviewer: String, reviewedAt: Date, reviewNotes: String }, { timestamps: true });
 resourceSchema.index({ id: 1 }, { unique: true }); resourceSchema.index({ provider: 1, providerId: 1, language: 1, edition: 1 }, { unique: true }); resourceSchema.index({ approval: 1, provider: 1 });
 const submissionSchema = new Schema({ owner: required, materialId: required, revision: Number, inputType: String, submittedText: String, extractedText: String, uploadReference: String, status: String }, { timestamps: true });
 submissionSchema.index({ owner: 1, materialId: 1, revision: 1 }, { unique: true });
@@ -26,3 +26,23 @@ function model(name: string, schema: Schema) { return mongoose.models[name] || m
 const quotaSchema = new Schema({ _id: String, count: { type: Number, required: true }, expiresAt: { type: Date, required: true } });
 quotaSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const Resources = model('resources', resourceSchema), Submissions = model('submissions', submissionSchema), Claims = model('claims', claimSchema), EvidenceRecords = model('evidence', evidenceSchema), Findings = model('findings', findingSchema), Attempts = model('retrievalAttempts', attemptSchema), Retrievals = model('retrievals', retrievalSchema), Quotas = model('requestQuotas', quotaSchema);
+
+const sourceBookSchema = new Schema({
+  id: required, provider: { ...required, enum: ['openiti'] }, providerId: required,
+  title: required, author: required, language: required, edition: required,
+  release: required, commit: required, sourceUrl: required, metadataUrl: required,
+  license: required, licenseUrl: required, attribution: required,
+  originalPath: required, originalHeader: required,
+  approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+}, { timestamps: true });
+sourceBookSchema.index({ id: 1 }, { unique: true });
+sourceBookSchema.index({ provider: 1, providerId: 1, release: 1 }, { unique: true });
+const sourcePassageSchema = new Schema({
+  id: required, bookId: required, sequence: { type: Number, required: true },
+  locator: required, pageMarker: required, originalText: required, normalizedText: required,
+});
+sourcePassageSchema.index({ id: 1 }, { unique: true });
+sourcePassageSchema.index({ bookId: 1, sequence: 1 }, { unique: true });
+sourcePassageSchema.index({ bookId: 1, normalizedText: 'text' });
+export const SourceBooks = model('sourceBooks', sourceBookSchema);
+export const SourcePassages = model('sourcePassages', sourcePassageSchema);

@@ -4,9 +4,11 @@ test("OCR review requires confirmation and preserves corrections", async ({
   page,
 }) => {
   // This tests UI state with a mocked endpoint; it does not verify the OCR provider.
-  await page.route("**/api/ocr", (route) =>
-    route.fulfill({ json: { text: "Extracted original text" } }),
-  );
+  let ocrRequest = "";
+  await page.route("**/api/ocr", (route) => {
+    ocrRequest = route.request().postData() ?? "";
+    return route.fulfill({ json: { text: "Extracted original text" } });
+  });
   await page.goto("/projects");
   await page.getByLabel("Title", { exact: true }).fill("OCR review");
   await page
@@ -24,7 +26,10 @@ test("OCR review requires confirmation and preserves corrections", async ({
       "base64",
     ),
   });
+  await expect(page.getByLabel("OCR language")).toHaveValue("ara");
   await page.getByRole("button", { name: "Extract / retry OCR" }).click();
+  expect(ocrRequest).toContain('name="language"');
+  expect(ocrRequest).toContain("ara");
   const editor = page.getByRole("textbox", {
     name: "Review and edit extracted text",
     exact: true,
@@ -41,6 +46,7 @@ test("OCR review requires confirmation and preserves corrections", async ({
   await page
     .getByRole("button", { name: "Save material", exact: true })
     .click();
+  await expect(page.getByText("Research material saved.", { exact: true })).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("textbox", { name: "Research text", exact: true }),

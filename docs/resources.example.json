@@ -8,6 +8,9 @@
     "language": "ar",
     "edition": "Uthmani text (verify provider edition before approval)",
     "url": "https://quran.com",
-    "approval": "pending"
+    "approval": "approved",
+    "reviewer": "test-user",
+    "reviewNotes": "Approved for local testing",
+    "reviewedAt": "2026-10-07T12:00:00Z"
   }
 ]

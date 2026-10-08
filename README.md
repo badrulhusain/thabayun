@@ -18,7 +18,7 @@ Automated claim extraction and AI analysis use the official **groq-sdk**, exclus
 
 Screenshot OCR remains the separate OCR.space integration. The selected Groq models receive text only; review, correct, confirm, and save OCR text before using the ordinary claim pipeline. No screenshot is sent to Groq.
 
-The integration uses English (`eng`), engine 2; it does not claim Arabic OCR support. JPEG, PNG, and WebP up to 1,000,000 bytes are accepted. WebP is converted in the browser to PNG, a documented provider format; converted files must also fit the limit. Extraction sends screenshots to OCR.space only on request. Images are not persisted. Preview URLs are released; canceled or delayed requests cannot overwrite corrections. Review and explicit confirmation are required before saving screenshot text. Provider requests time out after 45 seconds. Missing credentials and failed extraction display errors with retry available. Provider success needs a configured key to verify.
+The integration defaults to Arabic (`ara`) with OCR Engine 3, and also offers English (`eng`) with Engine 2 or automatic detection with Engine 3. JPEG, PNG, and WebP up to 1,000,000 bytes are accepted. WebP is converted in the browser to PNG, a documented provider format; converted files must also fit the limit. Extraction sends screenshots to OCR.space only on request. Images are not persisted. Preview URLs are released; canceled or delayed requests cannot overwrite corrections. Review and explicit confirmation are required before saving screenshot text. Provider requests time out after 45 seconds. Missing credentials and failed extraction display errors with retry available. Provider success needs a configured key to verify.
 
 ## Code explanation
 

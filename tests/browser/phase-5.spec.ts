@@ -27,8 +27,10 @@ test('public status has only documented availability fields', async ({ request, 
   const result = await request.get('/api/status');
   expect(result.status()).toBe(200);
   expect(result.headers()['cache-control']).toContain('no-store');
-  expect(Object.keys(await result.json()).sort()).toEqual(['database', 'modelConfigured', 'ocrConfigured', 'quranConfigured', 'quranEnvironment', 'sunnahConfigured', 'approvedResources'].sort());
+  expect(Object.keys(await result.json()).sort()).toEqual(['database', 'modelConfigured', 'ocrConfigured', 'quranConfigured', 'quranEnvironment', 'sunnahConfigured', 'ummahConfigured', 'approvedResources'].sort());
   await page.goto('/sources');
   await expect(page.getByRole('heading', { name: 'Service availability' })).toBeVisible();
-  await expect(page.getByText('Turath and Parse', { exact: true })).toBeVisible();
+  await expect(page.getByText('UmmahAPI', { exact: true })).toBeVisible();
+  await expect(page.getByText('Turath', { exact: true })).toBeVisible();
+  await expect(page.getByText('OpenITI', { exact: true })).toBeVisible();
 });

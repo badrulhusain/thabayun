@@ -1,5 +1,7 @@
 import "server-only";
-export async function extractText(file: File) {
+export type OCRLanguage = "ara" | "eng" | "auto";
+
+export async function extractText(file: File, language: OCRLanguage = "ara") {
   const key = process.env.OCR_SPACE_API_KEY;
   if (!key)
     throw new Error(
@@ -7,8 +9,9 @@ export async function extractText(file: File) {
     );
   const form = new FormData();
   form.set("file", file);
-  form.set("language", "eng");
-  form.set("OCREngine", "2");
+  form.set("language", language);
+  // Engine 3 supports Arabic and is the provider's highest-accuracy engine.
+  form.set("OCREngine", language === "eng" ? "2" : "3");
   form.set("isOverlayRequired", "false");
   const response = await fetch("https://api.ocr.space/parse/image", {
     method: "POST",

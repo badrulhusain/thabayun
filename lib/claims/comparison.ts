@@ -7,6 +7,6 @@ export function compare(claim: Claim, run: RetrievalRun): Pick<AnalysisRun, "quo
     cited.length ? "Wording differs" : run.passages.length ? "Uncertain" : "Not located";
   const reference: AnalysisRun["reference"] = !claim.reference ? "Not supplied" : !cited.length ? "Not located" :
     !claim.quotation ? "Uncertain" : cited.some(p => exact.includes(p)) ? "Resolved and matches the cited passage" :
-    exact.length ? "Resolved but mismatched" : "Uncertain";
+    "Resolved but mismatched";
   return { quotation, reference };
 }

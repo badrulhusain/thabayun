@@ -47,6 +47,6 @@ No live Atlas account, provider credential or deployed site was available for th
 
 - Turath and Parse adapters are unavailable until authorized contracts and source-specific implementations are supplied. No guessed endpoints or fabricated passages.
 - Live Quran/hadith lookup needs explicit references. Full-corpus quotation search, semantic search and autonomous research are not implemented.
-- Text and screenshot input are supported; PDF input/export is not. Homepage screenshot input accepts PNG/JPEG up to 1 MB; OCR is English and needs review.
+- Text and screenshot input are supported; PDF input/export is not. Homepage screenshot input accepts PNG/JPEG up to 1 MB; OCR supports Arabic, English, and automatic detection and always needs review.
 - Accounts have no password reset, email verification, credential deletion UI or collaboration. `/data` deletes research records; it retains account credentials. Browser-local inquiries are separate from account research and are not synchronized.
 - Citation validation checks identity and quotation provenance; generated interpretation still needs scholarly review. API failure is not a finding of fabrication.

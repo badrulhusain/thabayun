@@ -1,4 +1,4 @@
-import { extractText } from "@/lib/ocr";
+import { extractText, type OCRLanguage } from "@/lib/ocr";
 import { assertSameOrigin, readBody, failure } from '@/lib/claims/http';
 import { owner } from '@/lib/integrations/owner';
 import { ClaimsError } from '@/lib/claims/validation';
@@ -20,6 +20,11 @@ export async function POST(request: Request) {
     const bytesBody = await readBody(request, 1100000);
     const form = await new Response(bytesBody, { headers: { 'Content-Type': request.headers.get('content-type') ?? '' } }).formData();
     const file = form.get("file");
+    const requestedLanguage = form.get("language");
+    const language: OCRLanguage =
+      requestedLanguage === "eng" || requestedLanguage === "auto"
+        ? requestedLanguage
+        : "ara";
     if (
       !(file instanceof File) ||
       !["image/png", "image/jpeg"].includes(file.type) ||
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     await owner();
-    return Response.json({ text: await extractText(file) });
+    return Response.json({ text: await extractText(file, language) });
   } catch (error) {
     if (error instanceof ClaimsError) return failure(error);
     return Response.json(

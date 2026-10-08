@@ -202,7 +202,7 @@ test("screenshot validation, OCR failure, and narrow layout", async ({
   });
   await page.goto("/sources");
   await expect(
-    page.getByRole("heading", { name: "Curated sources" }),
+    page.getByRole("heading", { name: "Local demonstration library" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Open original source" }),

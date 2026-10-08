@@ -82,7 +82,7 @@ export async function mutate(owner: string, body: Record<string, unknown>, signa
       const content = statements(object(result.output).statements, selected, sections);
       await approved(items, true);
       if (await ProjectEvidence.countDocuments({ ...filter, id: { $in: selected } }) !== selected.length) throw new ClaimsError('Evidence selection changed during generation.', 409);
-      const sequence = await Projects.findOneAndUpdate({ owner, id: projectId, generationToken: token }, { $inc: { revision: 1 } }, { new: true });
+      const sequence = await Projects.findOneAndUpdate({ owner, id: projectId, generationToken: token }, { $inc: { revision: 1 } }, { returnDocument: 'after' });
       if (!sequence) throw new ClaimsError('Generation lease expired.', 409);
       await (action === 'brief' ? Briefs : Comparisons).create({ ...filter, id: randomUUID(), revision: sequence.revision, statements: content, selectedEvidenceIds: selected, citations: items, model: result.model, telemetry: result.telemetry, promptVersion: 'research-4b-v1', status: 'draft-needs-review', userEdits: false, question: project.question, scope: { resources: project.resourceIds, languages: project.languages } });
     } finally { await Projects.updateOne({ owner, id: projectId, generationToken: token }, { $unset: { generationToken: 1, generationUntil: 1 } }); }

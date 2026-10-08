@@ -2,9 +2,7 @@
   "name": "thabayun",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": "24.x"
-  },
+  "engines": { "node": "24.x" },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,7 +16,8 @@
     "eval:groq": "node tests/evaluate-groq.cjs",
     "build:extension": "node extension/build.cjs",
     "test:extension": "node tests/extension.cjs",
-    "resources:import": "node scripts/resources.cjs"
+    "resources:import": "node scripts/resources.cjs",
+    "openiti:import": "node scripts/import-openiti.cjs"
   },
   "dependencies": {
     "groq-sdk": "^1.6.0",

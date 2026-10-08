@@ -23,6 +23,7 @@ export async function GET() {
     quranConfigured: !!(process.env.QF_CLIENT_ID?.trim() && process.env.QF_CLIENT_SECRET?.trim()),
     quranEnvironment: process.env.QF_ENV === 'production' ? 'production' : 'prelive',
     sunnahConfigured: !!process.env.SUNNAH_API_KEY?.trim(),
+    ummahConfigured: !!process.env.UMMAH_API_KEY?.trim(),
     approvedResources: resources,
   }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

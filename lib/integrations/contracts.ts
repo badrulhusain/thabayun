@@ -1,10 +1,10 @@
-export type Provider = 'quran-foundation' | 'sunnah' | 'turath' | 'parse';
+export type Provider = 'quran-foundation' | 'sunnah' | 'ummah' | 'turath' | 'openiti' | 'parse';
 export type Outcome = 'success' | 'no_match' | 'unavailable' | 'error' | 'unsupported' | 'not_configured';
-export type Resource = { id: string; provider: Provider; providerId: string; type: 'arabic' | 'translation' | 'tafsir' | 'hadith' | 'book'; title: string; language: string; url: string; author?: string; translator?: string; editor?: string; edition: string; approval: 'pending' | 'approved' | 'rejected'; reviewer?: string; reviewedAt?: Date; reviewNotes?: string };
+export type Resource = { id: string; provider: Provider; providerId: string; type: 'arabic' | 'translation' | 'tafsir' | 'word-by-word' | 'mutashabihat' | 'hadith' | 'book'; title: string; language: string; url: string; author?: string; translator?: string; editor?: string; edition: string; approval: 'pending' | 'approved' | 'rejected'; reviewer?: string; reviewedAt?: Date; reviewNotes?: string };
 export type Reference = { kind: 'quran'; surah: number; start: number; end: number } | { kind: 'hadith'; collection: string; number: string };
 export type Evidence = { resourceId: string; provider: Provider; originalText: string; normalizedText: string; locator: string; structuredLocator?: Reference; sourceUrl: string; language: string; translationIdentity: string; author?: string; edition: string; context?: string; grades: { authority: string; grade: string }[]; limitations: string[]; retrievedAt: string };
 export type ProviderResult = { outcome: Outcome; evidence: Evidence[]; limitations: string[]; attempts: number };
-export interface Adapter { capabilities: { referenceLookup: boolean; quotationSearch: boolean; contextRetrieval: boolean; bookSearch: boolean }; retrieve(resource: Resource, reference?: Reference): Promise<ProviderResult> }
+export interface Adapter { capabilities: { referenceLookup: boolean; quotationSearch: boolean; contextRetrieval: boolean; bookSearch: boolean }; retrieve(resource: Resource, reference?: Reference, quotation?: string): Promise<ProviderResult> }
 export function normalize(text: string) { return text.normalize('NFC').trim().replace(/\s+/gu, ' '); }
 // Explicit numeric references only; provider validates actual verse existence.
 export function parseReference(text: string): Reference | undefined {

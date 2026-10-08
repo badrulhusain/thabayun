@@ -9,7 +9,7 @@ async function main() {
   if (!Array.isArray(resources) || resources.length > 100) throw new Error('Expected at most 100 resource records');
   for (const r of resources) {
     for (const key of ['id', 'providerId', 'title', 'language', 'edition', 'url']) if (typeof r[key] !== 'string' || !r[key].trim() || r[key].length > 2000) throw new Error(`Invalid ${key}`);
-    if (!['quran-foundation', 'sunnah', 'turath', 'parse'].includes(r.provider) || !['arabic', 'translation', 'tafsir', 'hadith', 'book'].includes(r.type) || !['pending', 'approved', 'rejected'].includes(r.approval)) throw new Error('Invalid resource enum');
+    if (!['quran-foundation', 'sunnah', 'ummah', 'turath', 'openiti', 'parse'].includes(r.provider) || !['arabic', 'translation', 'tafsir', 'word-by-word', 'mutashabihat', 'hadith', 'book'].includes(r.type) || !['pending', 'approved', 'rejected'].includes(r.approval)) throw new Error('Invalid resource enum');
     if (new URL(r.url).protocol !== 'https:') throw new Error('HTTPS source URL required');
     if (r.approval === 'approved' && (!r.reviewer || !r.reviewNotes || !Number.isFinite(Date.parse(r.reviewedAt)))) throw new Error('Approval requires actual reviewer, timestamp and notes');
   }

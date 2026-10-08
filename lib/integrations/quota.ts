@@ -19,11 +19,11 @@ export async function consumeQuota(owner: string, now = Date.now()) {
       const filter = { _id: `${policy.scope}:${policy.window}:${start}` };
       const update = { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date(start + policy.window + 60000) } };
       let counter;
-      try { counter = await Quotas.findOneAndUpdate(filter, update, { upsert: true, new: true }); }
+      try { counter = await Quotas.findOneAndUpdate(filter, update, { upsert: true, returnDocument: 'after' }); }
       catch (error) {
         // Concurrent first requests may race to insert; increment the winner.
         if ((error as { code?: number }).code !== 11000) throw error;
-        counter = await Quotas.findOneAndUpdate(filter, { $inc: { count: 1 } }, { new: true });
+        counter = await Quotas.findOneAndUpdate(filter, { $inc: { count: 1 } }, { returnDocument: 'after' });
       }
       if (!counter) throw new Error('Missing quota counter');
       if (counter.count > policy.limit) {

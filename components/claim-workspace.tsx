@@ -142,15 +142,15 @@ export function ClaimWorkspace({ material }: { material: Material }) {
           <small>Material excerpt · characters {focusedClaim.start}–{focusedClaim.end}</small><blockquote dir="auto">{focusedClaim.excerpt}</blockquote>
           <p>Explicit quotation: {focusedClaim.quotation || "Not supplied"}<br />Attributed speaker: {focusedClaim.speaker || "Not supplied"}<br />Reference: {focusedClaim.reference || "Not supplied"}</p>
           <p>{PROVIDER_COVERAGE}</p>
-          {!focusedClaim.reference && <p>Use Edit claim to supply a reference such as 2:255. Enter the wording you want to compare in Explicit quotation.</p>}
+          {!focusedClaim.reference && !focusedClaim.quotation && <p>Use Edit claim to supply a reference such as 2:255, or enter the wording to search in Explicit quotation.</p>}
           {!retrieval && <p>Select this claim and retrieve evidence before analysis.</p>}
           {retrieval && <>
             <h4>Sources searched</h4><p>{retrieval.coverage}</p><small>{retrieval.collectionVersion} · {new Date(retrieval.searchedAt).toLocaleString()}</small>
             <p>Wording comparison: {compare(focusedClaim, retrieval).quotation}. Reference: {compare(focusedClaim, retrieval).reference}. Wording differences may reflect different translations. Exact wording does not establish hadith authenticity.</p>
             {retrieval.attempts?.map((a, i) => <p key={i} role="status">{a.provider}: {a.outcome.replaceAll('_', ' ')}. {a.limitations.join(' ')}</p>)}
             <details><summary>Retrieval queries and methods</summary><ul>{retrieval.queries.map((q, i) => <li key={i}>{q.method}: {q.query}</li>)}</ul></details>
-            <h4>Exact-reference matches</h4>
-            {!retrieval.passages.some(p => p.method === "exact-reference") && <p>No exact reference retrieved. Use surah:ayah or an official collection:hadithNumber reference. Check resource approval and provider status above.</p>}
+            <h4>{focusedClaim.reference ? "Exact-reference matches" : "Quotation matches"}</h4>
+            {!retrieval.passages.length && <p>No matching passage was retrieved. Check the quotation or reference, resource approval, and provider status above.</p>}
             <h4>Retrieved evidence</h4>
             <AddToResearch evidenceIds={retrieval.passages.filter(p => !excluded.includes(p.id)).map(p => p.id)} claimId={focusedClaim.id} />
             {!retrieval.passages.length && <p>No relevant evidence retrieved. This does not establish that the claim is false.</p>}
