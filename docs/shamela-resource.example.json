@@ -1,0 +1,13 @@
+[
+  {
+    "id": "shamela-parse-all-ar",
+    "provider": "shamela",
+    "providerId": "all",
+    "type": "book",
+    "title": "Shamela Islamic Library via Parse",
+    "language": "ar",
+    "edition": "Live Shamela online pages; print edition varies by book and must be verified",
+    "url": "https://shamela.ws",
+    "approval": "pending"
+  }
+]

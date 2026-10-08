@@ -5,7 +5,7 @@ import type { ModelTelemetry } from "../types";
 import { modelConfig } from "./config";
 import { ClaimsError } from "./validation";
 
-export type ModelRequest = { task: "extract" | "analyze"; instructions: string; data: unknown; schema: Record<string, unknown> };
+export type ModelRequest = { task: "extract" | "search" | "analyze"; instructions: string; data: unknown; schema: Record<string, unknown> };
 export type ModelCall = (request: ModelRequest, signal?: AbortSignal) => Promise<{ output: unknown; model: string; telemetry?: ModelTelemetry }>;
 export const MODEL_LIMITS = { timeoutMs: 45000, maxAttempts: 2, concurrentCalls: 2, inputBytes: 100000, outputTokens: 6000 } as const;
 const runtime = globalThis as typeof globalThis & { __tabayyunGroqState?: { active: number; recent: ModelTelemetry[] } };
@@ -32,7 +32,7 @@ type Dependencies = { client?: (key: string) => Client; wait?: typeof abortableD
 export function createModelAdapter(dependencies: Dependencies = {}): ModelCall {
   const now = dependencies.now ?? Date.now, wait = dependencies.wait ?? abortableDelay;
   return async (request, signal) => {
-    const started = now(), config = modelConfig(), model = request.task === "extract" ? config.extractionModel : config.analysisModel;
+    const started = now(), config = modelConfig(), model = request.task === "analyze" ? config.analysisModel : config.extractionModel;
     let attempts = 0, usage: ModelTelemetry["usage"] = null, finishReason: string | undefined, providerErrorCode: ModelTelemetry["providerErrorCode"];
     const telemetry = (status: ModelTelemetry["status"]): ModelTelemetry => ({ provider: "groq", task: request.task, model, usage, latencyMs: Math.max(0, now() - started), attempts, recordedAt: new Date().toISOString(), status, ...(finishReason ? { finishReason } : {}), ...(providerErrorCode ? { providerErrorCode } : {}) });
     const fail = (message: string, status: number, code: string, completion: ModelTelemetry["status"], retryAfter?: string): never => {

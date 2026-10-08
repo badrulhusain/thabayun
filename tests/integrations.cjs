@@ -3,16 +3,23 @@ require('./search.cjs');
 const assert = require('node:assert/strict');
 const Module = require('node:module'), load = Module._load;
 Module._load = function(name, ...args) { return name === 'server-only' ? {} : load.call(this, name, ...args); };
-const { quran, sunnah, ummah, turath, parse } = require('../lib/integrations/providers.ts');
+const { quran, sunnah, ummah, shamela, turath, parse } = require('../lib/integrations/providers.ts');
+const { arabicSearchQueries, hasArabic } = require('../lib/integrations/query-planner.ts');
 const { requestJson } = require('../lib/integrations/request.ts');
 const { parseReference, comparison } = require('../lib/integrations/contracts.ts');
 Module._load = load;
 const resource = { id: 'fixture-quran', provider: 'quran-foundation', providerId: 'text_uthmani', type: 'arabic', title: 'Synthetic fixture', language: 'ar', edition: 'fixture-only', url: 'https://quran.com', approval: 'approved' };
 async function main() {
   const original = global.fetch;
-  process.env.QF_CLIENT_ID = 'fixture'; process.env.QF_CLIENT_SECRET = 'fixture'; process.env.SUNNAH_API_KEY = 'fixture';
+  process.env.QF_CLIENT_ID = 'fixture'; process.env.QF_CLIENT_SECRET = 'fixture'; process.env.SUNNAH_API_KEY = 'fixture'; process.env.PARSE_API_KEY = 'fixture'; process.env.GROQ_API_KEY = 'fixture';
   try {
     assert.deepEqual(parseReference('Quran 2:255'), { kind: 'quran', surah: 2, start: 255, end: 255 });
+    assert.equal(hasArabic('seek knowledge'), false); assert.equal(hasArabic('اطلبوا العلم'), true);
+    const planned = await arabicSearchQueries('seek knowledge even from china', undefined, async request => {
+      assert.equal(request.task, 'search');
+      return { output: { queries: ['اطلبوا العلم ولو بالصين'] }, model: 'fixture' };
+    });
+    assert.deepEqual(planned, ['اطلبوا العلم ولو بالصين']);
     assert.throws(() => parseReference('2:1-10')); assert.throws(() => parseReference('115:1'));
     global.fetch = async () => { throw new Error('Out-of-coverage lookup must not call the provider'); };
     process.env.QF_ENV = 'prelive';
@@ -60,6 +67,19 @@ async function main() {
     const similarHadith = await ummah.retrieve({ ...ummahHadith, providerId: 'all', language: 'ar' }, undefined, 'إنما الأعمال بالنتائج'); assert.equal(similarHadith.outcome, 'success'); assert.equal(similarHadith.evidence[0].locator, 'bukhari:1'); assert.equal(similarHadithSearches, 2); assert.match(similarHadith.limitations[0], /near-match/);
     global.fetch = async () => new Response(null, { status: 404 }); assert.equal((await ummah.retrieve(ummahHadith, parseReference('bukhari:1'))).outcome, 'no_match');
     global.fetch = async () => Response.json({ success: false }); assert.equal((await ummah.retrieve(ummahHadith, parseReference('bukhari:1'))).outcome, 'error');
+
+    const shamelaResource = { ...resource, id: 'fixture-shamela', provider: 'shamela', providerId: 'all', type: 'book', title: 'Shamela fixture', language: 'ar', edition: 'Online page; print edition not supplied' };
+    let shamelaCalls = 0;
+    global.fetch = async url => {
+      shamelaCalls++;
+      if (url.includes('/search_books_by_content?')) return Response.json({ status: 'success', data: { results: [{ title: 'SYNTHETIC Arabic book', author: 'Fixture author', url: 'https://shamela.ws/book/21550/41', snippet: 'SYNTHETIC matching snippet' }] } });
+      assert.ok(url.includes('/get_book_page?book_id=21550&page_number=41'));
+      return Response.json({ status: 'success', data: { book_id: '21550', page_number: '41', book_title: 'SYNTHETIC Arabic book', author: 'Fixture author', content: 'SYNTHETIC full Arabic page evidence' } });
+    };
+    const sh = await shamela.retrieve(shamelaResource, undefined, 'SYNTHETIC Arabic query');
+    assert.equal(sh.outcome, 'success'); assert.equal(shamelaCalls, 2); assert.equal(sh.evidence[0].sourceTitle, 'SYNTHETIC Arabic book'); assert.equal(sh.evidence[0].locator, 'SYNTHETIC Arabic book, Shamela page 41'); assert.match(sh.evidence[0].limitations.join(' '), /independent managed wrapper/);
+    global.fetch = async () => Response.json({ status: 'success', data: { results: [{ title: 'Bad URL fixture', author: '', url: 'https://evil.example/book/1/1', snippet: '' }] } });
+    assert.equal((await shamela.retrieve(shamelaResource, undefined, 'fixture')).outcome, 'error');
 
     global.fetch = async () => new Response(null, { status: 401 }); await assert.rejects(requestJson('https://fixture.test'), e => e.outcome === 'error' && e.attempts === 1);
     global.fetch = async () => new Response(null, { status: 429, headers: { 'retry-after': '60' } }); await assert.rejects(requestJson('https://fixture.test'), e => e.outcome === 'unavailable' && e.attempts === 1);

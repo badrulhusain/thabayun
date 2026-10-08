@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-type Status = { database: string; modelConfigured: boolean; ocrConfigured: boolean; quranConfigured: boolean; quranEnvironment: string; sunnahConfigured: boolean; ummahConfigured: boolean; approvedResources: { provider: string; count: number }[] };
+type Status = { database: string; modelConfigured: boolean; ocrConfigured: boolean; quranConfigured: boolean; quranEnvironment: string; sunnahConfigured: boolean; ummahConfigured: boolean; shamelaConfigured: boolean; approvedResources: { provider: string; count: number }[] };
 export function ServiceStatus() {
   const [status, setStatus] = useState<Status>(), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   async function refresh() {
@@ -27,6 +27,7 @@ export function ServiceStatus() {
       <dt>Quran Foundation</dt><dd>{status.quranConfigured ? `Configured · ${status.quranEnvironment} · ${count('quran-foundation')} approved resources` : 'Credentials not configured'}{status.quranEnvironment === 'prelive' && ' · Testing is limited to surahs 1 and 2.'}</dd>
       <dt>Sunnah.com</dt><dd>{status.sunnahConfigured ? `Configured · ${count('sunnah')} approved resources` : 'API key not configured'}</dd>
       <dt>UmmahAPI</dt><dd>{`${count('ummah')} approved resources · anonymous access enabled${status.ummahConfigured ? ' · higher-limit key configured' : ''}`}</dd>
+      <dt>Shamela via Parse</dt><dd>{status.shamelaConfigured ? `Configured · ${count('shamela')} approved resources · bounded search and page retrieval` : 'API key not configured'}</dd>
       <dt>Turath</dt><dd>Public API access; each request reports its actual result · {count('turath')} approved resources</dd>
       <dt>OpenITI</dt><dd>{count('openiti')} approved resources · imported pending texts remain authenticated previews</dd>
     </dl>

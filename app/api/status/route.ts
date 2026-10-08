@@ -24,6 +24,7 @@ export async function GET() {
     quranEnvironment: process.env.QF_ENV === 'production' ? 'production' : 'prelive',
     sunnahConfigured: !!process.env.SUNNAH_API_KEY?.trim(),
     ummahConfigured: !!process.env.UMMAH_API_KEY?.trim(),
+    shamelaConfigured: !!(process.env.PARSE_API_KEY?.trim() || process.env.SHAMEELA_API_KEY?.trim()),
     approvedResources: resources,
   }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

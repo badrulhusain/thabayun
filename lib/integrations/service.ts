@@ -5,6 +5,7 @@ import { ClaimsError } from '../claims/validation';
 import { adapters } from './providers';
 import { parseReference, comparison, type Resource, type Evidence } from './contracts';
 import { connect, Resources, Submissions, Claims, EvidenceRecords, Attempts, Retrievals, Findings } from './database';
+import { arabicSearchQueries, hasArabic } from './query-planner';
 function evidenceScore(query: string, text: string) {
   const fold = (value: string) => value.normalize('NFKD').replace(/[\u064b-\u065f\u0670\u0640]/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   const tokens = [...new Set(fold(query).split(' ').filter(token => token.length > 1))];
@@ -17,9 +18,9 @@ function fallbackQuotation(claim: Claim, hasReference: boolean) {
   return excerpt.length <= 4000 ? excerpt : '';
 }
 function prioritizeAllCollection(resources: Resource[]) {
-  return [...resources].sort((a, b) => Number(b.providerId === 'all') - Number(a.providerId === 'all'));
+  return [...resources].sort((a, b) => (Number(b.providerId === 'all') + Number(b.provider === 'shamela')) - (Number(a.providerId === 'all') + Number(a.provider === 'shamela')));
 }
-export async function retrieveApproved(claim: Claim, owner: string, material?: Material): Promise<RetrievalRun> {
+export async function retrieveApproved(claim: Claim, owner: string, material?: Material, signal?: AbortSignal): Promise<RetrievalRun> {
   await connect(); let reference;
   try { reference = parseReference(claim.reference); } catch { throw new ClaimsError('Use a valid explicit reference and at most five Quran verses.'); }
   if (material && (material.id !== claim.materialId || material.projectId !== claim.projectId || (material.revision ?? 1) !== claim.materialRevision || material.editedText.slice(claim.start, claim.end) !== claim.excerpt)) throw new ClaimsError('Claim does not match submitted material.');
@@ -30,22 +31,36 @@ export async function retrieveApproved(claim: Claim, owner: string, material?: M
   const providers = reference?.kind === 'quran' ? ['quran-foundation', 'ummah'] : reference?.kind === 'hadith' ? ['sunnah', 'ummah'] : undefined;
   const quranQuotationScope = { provider: { $in: ['quran-foundation', 'ummah'] }, type: { $in: ['arabic', 'translation'] } };
   const hadithQuotationScope = { provider: 'ummah', type: 'hadith' };
-  const quotationScope = claim.type === 'Hadith quotation or attribution' ? hadithQuotationScope
+  const shamelaQuotationScope = { provider: 'shamela', type: 'book' };
+  const quotationScope = claim.type === 'Hadith quotation or attribution' ? { $or: [hadithQuotationScope, shamelaQuotationScope] }
     : claim.type === 'Quran quotation or attribution' ? quranQuotationScope
-    : claim.type === 'Religious interpretation' ? { $or: [hadithQuotationScope, quranQuotationScope] }
-    : { provider: { $in: ['turath', 'openiti'] }, type: 'book' };
+    : claim.type === 'Religious interpretation' ? { $or: [hadithQuotationScope, quranQuotationScope, shamelaQuotationScope] }
+    : { provider: { $in: ['shamela', 'turath', 'openiti'] }, type: 'book' };
   const resourceFilter = { approval: 'approved', ...(providers ? { provider: { $in: providers }, ...(reference?.kind === 'hadith' ? { providerId: reference.collection } : {}) } : quotationScope) };
   let resources = await Resources.find(resourceFilter).limit(reference ? 8 : 24).lean() as unknown as Resource[];
   if (!reference && claim.type === 'Religious interpretation') {
-    const hadith = prioritizeAllCollection(resources.filter(r => r.provider === 'ummah' && r.type === 'hadith')).slice(0, 4);
-    const quran = resources.filter(r => ['arabic', 'translation'].includes(r.type)).slice(0, 4);
-    resources = [...hadith, ...quran];
+    const hadith = prioritizeAllCollection(resources.filter(r => r.provider === 'ummah' && r.type === 'hadith')).slice(0, 3);
+    const quran = resources.filter(r => ['arabic', 'translation'].includes(r.type)).slice(0, 3);
+    const books = prioritizeAllCollection(resources.filter(r => r.provider === 'shamela' && r.type === 'book')).slice(0, 2);
+    resources = [...hadith, ...quran, ...books];
   } else resources = prioritizeAllCollection(resources).slice(0, 8);
   const applicable = resources.filter(r => reference ? providers!.includes(r.provider) && (reference.kind !== 'hadith' || r.providerId === reference.collection) : true);
   const passages: RetrievedPassage[] = [], limitations: string[] = [], attempts: NonNullable<RetrievalRun['attempts']> = [];
   if (!applicable.length) { limitations.push('No applicable approved resources. A reviewer must approve individual resources before retrieval.'); attempts.push({ provider: 'resources', outcome: 'not_configured', limitations: ['Resource approval required.'] }); }
+  let expandedQuery = '';
+  if (quotation && applicable.some(r => r.provider === 'shamela') && !hasArabic(quotation)) {
+    try {
+      expandedQuery = (await arabicSearchQueries(quotation, signal))[0] ?? '';
+      if (expandedQuery) limitations.push('An AI-generated Arabic phrase was used only to discover candidate source pages; the retrieved Arabic text remains the evidence.');
+    } catch {
+      if (signal?.aborted) throw new ClaimsError('Source retrieval canceled.', 499, 'RETRIEVAL_CANCELED');
+      limitations.push('Arabic query expansion was unavailable; Shamela search used the submitted wording.');
+    }
+  }
   for (const r of applicable) {
-    const lookups: { type: 'reference' | 'quotation'; reference?: typeof reference; quotation?: string }[] = [{ type: reference ? 'reference' : 'quotation', reference, quotation: reference ? undefined : quotation }];
+    const lookups: { type: 'reference' | 'quotation' | 'keyword'; reference?: typeof reference; quotation?: string }[] = r.provider === 'shamela' && expandedQuery
+      ? [{ type: 'keyword', quotation: expandedQuery }]
+      : [{ type: reference ? 'reference' : 'quotation', reference, quotation: reference ? undefined : quotation }];
     if (reference && claim.quotation && r.provider === 'ummah' && ['arabic', 'translation', 'hadith'].includes(r.type)) lookups.push({ type: 'quotation', quotation: claim.quotation });
     for (const lookup of lookups) {
       const started = Date.now(), result = await adapters[r.provider].retrieve(r, lookup.reference, lookup.quotation);
@@ -59,12 +74,13 @@ export async function retrieveApproved(claim: Claim, owner: string, material?: M
         const filter = { resourceId: r.id, edition: e.edition, language: e.language, translationIdentity: e.translationIdentity, locator: e.locator, contentHash: versionHash };
         const stored = await EvidenceRecords.findOneAndUpdate(filter, { $setOnInsert: { ...e, id: randomUUID(), contentHash: versionHash } }, { upsert: true, returnDocument: 'after' });
         if (passages.some(p => p.id === stored.id)) continue;
-        passages.push({ id: stored.id, sourceId: r.id, text: e.originalText, locator: e.locator, surroundingContext: e.context, tags: [], score: lookup.type === 'reference' ? 100 : evidenceScore(quotation, e.originalText), method: lookup.type === 'reference' ? 'exact-reference' : 'exact-quotation', provenance: 'live', grades: e.grades, limitations: e.limitations, source: { id: r.id, title: r.title, author: r.author ?? 'Not supplied', translator: r.translator, edition: r.edition, sourceType: r.type, language: e.language, URL: e.sourceUrl, reuseTerms: 'Provider terms apply; no shared evidence cache enabled.' } });
+        passages.push({ id: stored.id, sourceId: r.id, text: e.originalText, locator: e.locator, surroundingContext: e.context, tags: [], score: lookup.type === 'reference' ? 100 : evidenceScore(lookup.quotation ?? quotation, e.originalText), method: lookup.type === 'reference' ? 'exact-reference' : lookup.type === 'keyword' ? 'keyword' : 'exact-quotation', provenance: 'live', grades: e.grades, limitations: e.limitations, source: { id: r.id, title: e.sourceTitle ?? r.title, author: e.author ?? r.author ?? 'Not supplied', translator: r.translator, edition: e.edition, sourceType: r.type, language: e.language, URL: e.sourceUrl, reuseTerms: 'Provider terms apply; no shared evidence cache enabled.' } });
       }
     }
   }  const queries: RetrievalRun['queries'] = [];
   if (claim.reference) queries.push({ query: claim.reference, method: 'exact-reference' });
   if (quotation) queries.push({ query: quotation, method: 'exact-quotation' });
+  if (expandedQuery) queries.push({ query: expandedQuery, method: 'keyword' });
   if (!queries.length) queries.push({ query: '[no reference or quotation supplied]', method: 'exact-reference' });
 
   const run: RetrievalRun = { id: randomUUID(), projectId: claim.projectId, claimId: claim.id, claimRevision: claim.revision, materialRevision: claim.materialRevision, queries, collectionVersion: 'approved-providers-v1', searchedAt: new Date().toISOString(), sourcesSearched: passages.map(p => p.source), coverage: [...new Set(limitations)].join(' '), passages: passages.sort((a, b) => b.score - a.score).slice(0, 8), attempts };

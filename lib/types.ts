@@ -79,7 +79,7 @@ export type AnalysisRun = {
   cacheKey?: string;
 };
 export type ModelTelemetry = {
-  provider: "groq"; task: "extract" | "analyze"; model: string;
+  provider: "groq"; task: "extract" | "search" | "analyze"; model: string;
   usage: { inputTokens: number; outputTokens: number; totalTokens: number } | null;
   latencyMs: number; attempts: number; recordedAt: string; finishReason?: string;
   validationStatus?: "valid" | "needs_correction" | "rejected";

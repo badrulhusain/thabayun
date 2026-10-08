@@ -187,6 +187,60 @@ export const ummah: Adapter = { capabilities: { ...capabilities, quotationSearch
     return { outcome: evidence.length ? 'success' : 'no_match', evidence, attempts, limitations: usedNearMatch ? ['No exact quotation result; showing bounded translated-keyword or distinctive-token near-match candidates.'] : evidence.length ? [] : noMatch };
   } catch (e) { return { outcome: e instanceof ProviderError ? e.outcome : 'error', evidence: [], attempts: e instanceof ProviderError ? e.attempts : 1, limitations: ['UmmahAPI failed or returned invalid evidence; no religious verdict follows.'] }; }
 } };
+const SHAMELA_API = 'https://api.parse.bot/scraper/fea100ca-ae6c-4130-8469-4b1f65d5931e';
+function shamelaLocation(value: unknown) {
+  const url = new URL(string(value, 2000));
+  const parts = url.pathname.split('/').filter(Boolean);
+  const validPath = parts.length === 3 && parts[0] === 'book' && parts.slice(1).every(part => /^[0-9]+$/.test(part));
+  if (url.protocol !== 'https:' || url.hostname !== 'shamela.ws' || !validPath) throw new Error('Invalid Shamela result URL');
+  return { bookId: parts[1], pageNumber: parts[2], url: url.href };
+}
+export const shamela: Adapter = { capabilities: { ...capabilities, referenceLookup: false, quotationSearch: true, contextRetrieval: true, bookSearch: true }, async retrieve(r, ref, quotation) {
+  const key = process.env.PARSE_API_KEY?.trim() || process.env.SHAMEELA_API_KEY?.trim();
+  if (!key) return { outcome: 'not_configured', evidence: [], attempts: 0, limitations: ['Parse Shamela API key missing. Configure PARSE_API_KEY or SHAMEELA_API_KEY server-side.'] };
+  if (ref) return { outcome: 'unsupported', evidence: [], attempts: 0, limitations: ['Shamela uses bounded quotation search; Quran and collection:number references use their dedicated providers.'] };
+  if (!quotation?.trim()) return { outcome: 'unsupported', evidence: [], attempts: 0, limitations: ['Shamela retrieval requires an explicit quotation or generated Arabic search phrase.'] };
+  const headers = { 'X-API-Key': key, 'API-Snapshot-Version': '11' };
+  const params = new URLSearchParams({ query: quotation.trim(), page: '1' });
+  const evidence: Evidence[] = [], limitations: string[] = []; let attempts = 0;
+  try {
+    const search = await requestJson(SHAMELA_API + '/search_books_by_content?' + params, { headers });
+    attempts += search.attempts;
+    const root = object(search.data), payload = object(root.data);
+    if (root.status !== 'success' || !Array.isArray(payload.results)) throw new Error('Malformed Shamela search response');
+    const candidates: { title: string; author: string; snippet: string; bookId: string; pageNumber: string; url: string }[] = [];
+    for (const item of payload.results.slice(0, 20)) {
+      const row = object(item), location = shamelaLocation(row.url);
+      if (r.providerId !== 'all' && r.providerId !== location.bookId) continue;
+      if (candidates.some(candidate => candidate.bookId === location.bookId && candidate.pageNumber === location.pageNumber)) continue;
+      candidates.push({ title: string(row.title, 2000), author: typeof row.author === 'string' ? string(row.author, 2000, true) : '', snippet: typeof row.snippet === 'string' ? string(row.snippet, 10000, true) : '', ...location });
+    }
+    const configured = Number(process.env.SHAMELA_MAX_PAGES || 3);
+    const pageLimit = Number.isInteger(configured) ? Math.min(5, Math.max(1, configured)) : 3;
+    for (const candidate of candidates.slice(0, pageLimit)) {
+      try {
+        const pageParams = new URLSearchParams({ book_id: candidate.bookId, page_number: candidate.pageNumber });
+        const page = await requestJson(SHAMELA_API + '/get_book_page?' + pageParams, { headers }); attempts += page.attempts;
+        const pageRoot = object(page.data), data = object(pageRoot.data);
+        if (pageRoot.status !== 'success' || String(data.book_id) !== candidate.bookId || String(data.page_number) !== candidate.pageNumber) throw new Error('Malformed Shamela page response');
+        const title = string(data.book_title, 2000), author = typeof data.author === 'string' ? string(data.author, 2000, true) : '', content = string(data.content, 50000);
+        const e = base(r, content, title + ', Shamela page ' + candidate.pageNumber, candidate.url);
+        e.sourceTitle = title; e.author = author || candidate.author; e.context = candidate.snippet;
+        e.limitations = e.limitations.filter(limitation => limitation !== 'Surrounding context was not retrieved.');
+        e.limitations.push('Retrieved through Parse, an independent managed wrapper over shamela.ws.', 'Shamela page numbering may be internal rather than print-edition pagination; verify against the cited edition.', 'The endpoint does not distinguish body text from footnotes.', 'A book quotation or attributed judgment is evidence to review, not an independent hadith grade.');
+        evidence.push(e);
+      } catch (error) {
+        if (error instanceof ProviderError) attempts += error.attempts;
+        limitations.push('One matching Shamela page could not be retrieved; other completed pages were preserved.');
+      }
+    }
+    if (!candidates.length) limitations.push(r.providerId === 'all' ? 'No matching Shamela page was found in the first result page.' : 'No matching page was found in the approved Shamela book.');
+    if (candidates.length > pageLimit) limitations.push('Only the first ' + pageLimit + ' matching pages were fetched to bound API credits and response size.');
+    return { outcome: evidence.length ? 'success' : candidates.length ? 'unavailable' : 'no_match', evidence, attempts, limitations };
+  } catch (error) {
+    return { outcome: error instanceof ProviderError ? error.outcome : 'error', evidence, attempts: attempts + (error instanceof ProviderError ? error.attempts : 1), limitations: ['Shamela search failed or returned invalid evidence; no religious verdict follows.'] };
+  }
+} };
 export const turath: Adapter = { capabilities: { ...capabilities, referenceLookup: false, quotationSearch: true, contextRetrieval: true, bookSearch: true }, async retrieve(r, _ref, quotation) {
   if (!/^\d+$/.test(r.providerId)) return { outcome: 'error', evidence: [], attempts: 0, limitations: ['Turath provider ID must be numeric.'] };
   if (!quotation?.trim()) return { outcome: 'unsupported', evidence: [], attempts: 0, limitations: ['Turath retrieval requires an explicit quotation; page references are provider-specific.'] };
@@ -206,4 +260,4 @@ export const turath: Adapter = { capabilities: { ...capabilities, referenceLooku
 } };
 export const openiti: Adapter = { capabilities: { ...capabilities, referenceLookup: false, quotationSearch: true, contextRetrieval: true, bookSearch: true }, async retrieve(r, _ref, quotation) { return retrieveOpenITI(r, quotation); } };
 export const parse: Adapter = { capabilities: { ...capabilities, referenceLookup: false }, async retrieve() { return { outcome: 'not_configured', evidence: [], attempts: 0, limitations: ['Supply and review the configured Parse API OpenAPI specification and approved source mapping before enabling extraction. Parse is an extraction service, not a scholarly authority. No scraping jobs are created.'] }; } };
-export const adapters = { 'quran-foundation': quran, sunnah, ummah, turath, openiti, parse };
+export const adapters = { 'quran-foundation': quran, sunnah, ummah, shamela, turath, openiti, parse };
