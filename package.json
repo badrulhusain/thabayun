@@ -17,7 +17,8 @@
     "build:extension": "node extension/build.cjs",
     "test:extension": "node tests/extension.cjs",
     "resources:import": "node scripts/resources.cjs",
-    "openiti:import": "node scripts/import-openiti.cjs"
+    "openiti:import": "node scripts/import-openiti.cjs",
+    "shamela:disable-wildcard": "node scripts/disable-shamela-wildcard.cjs"
   },
   "dependencies": {
     "groq-sdk": "^1.6.0",

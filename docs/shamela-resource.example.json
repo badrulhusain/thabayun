@@ -8,6 +8,9 @@
     "language": "ar",
     "edition": "Live Shamela online pages; print edition varies by book and must be verified",
     "url": "https://shamela.ws",
-    "approval": "pending"
+    "approval": "pending",
+    "sourceReviewStatus": "out-of-scope",
+    "usagePermissionStatus": "not-reviewed",
+    "technicalStatus": "disabled"
   }
 ]

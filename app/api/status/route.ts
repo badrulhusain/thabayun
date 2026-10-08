@@ -1,4 +1,5 @@
 import { connect, Resources } from '@/lib/integrations/database';
+import { eligibleForEvidence, type Resource } from '@/lib/integrations/contracts';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 // Configuration presence is not a live provider test. Never return credential values.
@@ -8,11 +9,9 @@ export async function GET() {
   if (process.env.MONGODB_URI) {
     try {
       await connect();
-      resources = await Resources.aggregate([
-        { $match: { approval: 'approved' } },
-        { $group: { _id: '$provider', count: { $sum: 1 } } },
-        { $project: { _id: 0, provider: '$_id', count: 1 } },
-      ]);
+      const eligible = (await Resources.find({ approval: 'approved' }).lean() as unknown as Resource[]).filter(eligibleForEvidence);
+      resources = [...eligible.reduce((counts, resource) => counts.set(resource.provider, (counts.get(resource.provider) ?? 0) + 1), new Map<string, number>())]
+        .map(([provider, count]) => ({ provider, count }));
       database = 'connected';
     } catch { database = 'unavailable'; }
   }

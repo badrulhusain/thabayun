@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { AddToResearch } from './add-to-research';
 import { repository } from "@/lib/repository";
 import { excerptIssue, resolveExcerptOffsets, outdated } from "@/lib/claims/validation";
@@ -87,8 +88,14 @@ export function ClaimWorkspace({ material }: { material: Material }) {
       excerpt, start: 0, end: excerpt.length, statement: "", type: claimTypes[4], quotation: "", speaker: "", reference: "", validationIssue: "", coverageNote: PROVIDER_COVERAGE });
   }
   return <section aria-label="Claim analysis" className="claim-workspace">
-    <h3>Claims and evidence analysis</h3>
-    <p>Review claims before investigating. Automated extraction and AI analysis require a configured model. Manual claims and retrieval work without one.</p>
+    <p className="desk-label">CONTINUE THE VERIFICATION</p>
+    <h3>Review the claim, then trace the evidence.</h3>
+    <p>Use AI to identify claims or add one yourself. You approve the wording before Tabayyun searches any source.</p>
+    <div className="claim-guide" aria-label="Verification progress">
+      <span className="active"><b>02</b> Review claim</span>
+      <span><b>03</b> Trace sources</span>
+      <span><b>04</b> Compare evidence</span>
+    </div>
     {!loaded && !error && <p role="status">Loading saved claims…</p>}
     {!loaded && error && <button className="secondary" onClick={() => { setError(""); setLoadAttempt(prev => prev + 1); }}>Retry loading claims</button>}
     {error && <p role="alert" className="error">{error} Retry the same action when ready.</p>}
@@ -142,6 +149,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
           <small>Material excerpt · characters {focusedClaim.start}–{focusedClaim.end}</small><blockquote dir="auto">{focusedClaim.excerpt}</blockquote>
           <p>Explicit quotation: {focusedClaim.quotation || "Not supplied"}<br />Attributed speaker: {focusedClaim.speaker || "Not supplied"}<br />Reference: {focusedClaim.reference || "Not supplied"}</p>
           <p>{PROVIDER_COVERAGE}</p>
+          {focusedClaim.type === 'Hadith quotation or attribution' && !focusedClaim.reference && !focusedClaim.speaker && <p role="status">No hadith reference or attributed speaker was supplied. If this is juristic prose or a legal maxim rather than a prophetic report, use Edit claim and choose Religious interpretation (or Scholarly attribution when a scholar or work is named).</p>}
           {!focusedClaim.reference && !focusedClaim.quotation && <p>This short religious excerpt can be used as a quotation search. For more precise retrieval, use Edit claim to identify it as Quran or hadith wording, or supply a reference such as 2:255 or bukhari:1.</p>}
           {!retrieval && <p>Select this claim and retrieve evidence before analysis.</p>}
           {retrieval && <>
@@ -150,7 +158,7 @@ export function ClaimWorkspace({ material }: { material: Material }) {
             {retrieval.attempts?.map((a, i) => <p key={i} role="status">{a.provider}{a.resource ? ` - ${a.resource}` : ''}: {a.outcome.replaceAll('_', ' ')}. {a.limitations.join(' ')}</p>)}
             <details><summary>Retrieval queries and methods</summary><ul>{retrieval.queries.map((q, i) => <li key={i}>{q.method}: {q.query}</li>)}</ul></details>
             <h4>{focusedClaim.reference ? "Exact-reference matches" : "Quotation matches"}</h4>
-            {!retrieval.passages.length && <p>No matching passage was retrieved. Check the quotation or reference, resource approval, and provider status above.</p>}
+            {!retrieval.passages.length && <><p>No matching approved passage was retrieved. Check the quotation or reference, resource approval, and provider status above. Book-preview candidates below are discovery aids and cannot be used as approved evidence.</p><BookPreviewDiscovery key={focusedClaim.quotation || focusedClaim.excerpt} query={focusedClaim.quotation || focusedClaim.excerpt} /></>}
             <h4>Retrieved evidence</h4>
             <AddToResearch evidenceIds={retrieval.passages.filter(p => !excluded.includes(p.id)).map(p => p.id)} claimId={focusedClaim.id} />
             {!retrieval.passages.length && <p>No relevant evidence retrieved. This does not establish that the claim is false.</p>}
@@ -183,6 +191,26 @@ export function ClaimWorkspace({ material }: { material: Material }) {
       await repository.saveAnalysisNote(run.id, note); setHistory(prev => prev.map(r => r.id === run.id ? { ...r, personalNote: note } : r));
     }} />)}
   </section>;
+}
+
+type PreviewBook = { id: string; title: string; author: string; edition: string };
+type PreviewPassage = { id: string; bookId: string; locator: string; pageMarker: string; originalText: string };
+function BookPreviewDiscovery({ query }: { query: string }) {
+  const [result, setResult] = useState<{ loading: boolean; error: string; books: PreviewBook[]; passages: PreviewPassage[]; matchType: 'none' | 'exact' | 'near' }>({ loading: true, error: '', books: [], passages: [], matchType: 'none' });
+  useEffect(() => {
+    let active = true;
+    void fetch(`/api/library?q=${encodeURIComponent(query)}`, { cache: 'no-store' }).then(async response => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'Book preview unavailable.');
+      if (active) setResult({ loading: false, error: '', books: data.books ?? [], passages: data.passages ?? [], matchType: data.matchType ?? 'none' });
+    }).catch(error => { if (active) setResult(previous => ({ ...previous, loading: false, error: error instanceof Error ? error.message : 'Book preview unavailable.' })); });
+    return () => { active = false; };
+  }, [query]);
+  const href = `/library?q=${encodeURIComponent(query)}`;
+  if (result.loading) return <p role="status">Searching the authenticated OpenITI preview for discovery candidates...</p>;
+  if (result.error) return <p>Book preview unavailable: {result.error} <Link href={href}>Open the authenticated preview</Link>.</p>;
+  if (!result.passages.length) return <p>No literal or bounded near match was found in the imported OpenITI book. <Link href={href}>Open the authenticated preview</Link>.</p>;
+  return <section className="panel" aria-label="Book preview discovery candidates"><h4>Book preview discovery</h4><p>{result.matchType === 'exact' ? 'Literal normalized-text match.' : 'No literal match was found; these are bounded distinctive-token near matches.'} Preview text is not approved evidence and is excluded from analysis.</p>{result.passages.slice(0, 3).map(passage => { const book = result.books.find(item => item.id === passage.bookId); return <article className="claim-card" key={passage.id}><small>{book?.title ?? 'OpenITI preview'} ? {passage.locator} ? {passage.pageMarker}</small><blockquote className="passage" dir="rtl">{passage.originalText.length > 900 ? `${passage.originalText.slice(0, 900)}...` : passage.originalText}</blockquote></article>; })}<Link href={href}>Inspect all preview candidates</Link></section>;
 }
 
 function ClaimEditor({ claim, material, save, cancel }: { claim: Claim; material: Material; save: (c: Claim) => Promise<void>; cancel: () => void }) {

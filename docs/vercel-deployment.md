@@ -23,7 +23,7 @@ Set variables in **Project Settings → Environment Variables**. Use separate At
 
 The preflight prints missing **names**, never secret values. It blocks publishing without real operator/contact details. It validates configuration shape, not credential validity. Redeploy after editing environment variables: legal details and metadata are rendered at build time.
 
-`TABAYYUN_BACKEND_ORIGIN` and `TABAYYUN_EXTENSION_ORIGIN` belong to the development-only extension workflow; they do not set the website URL. Production extension requests remain unsupported. Parse and Turath remain unavailable until their contracts are reviewed.
+`TABAYYUN_BACKEND_ORIGIN` and `TABAYYUN_EXTENSION_ORIGIN` belong to the development-only extension workflow; they do not set the website URL. Production extension requests remain unsupported. Turath has no eligible resource while usage permission remains unclear; OpenITI is preview-only; Shamela is outside the current scope; and Parse remains not configured. See [the fiqh corpus milestone](fiqh-corpus-milestone.md).
 
 ## Atlas and providers
 

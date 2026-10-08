@@ -45,7 +45,7 @@ No live Atlas account, provider credential or deployed site was available for th
 
 ## Explicit prototype limits
 
-- Turath and Parse adapters are unavailable until authorized contracts and source-specific implementations are supplied. No guessed endpoints or fabricated passages.
+- Turath has a tested bounded search adapter, but book 963 remains unapproved until source review and usage permission are resolved. OpenITI is authenticated-preview-only. Shamela is outside the current scope and its wildcard resource is disabled. Parse remains not configured. No resource becomes public evidence from technical ingestion alone.
 - Live Quran/hadith lookup needs explicit references. Full-corpus quotation search, semantic search and autonomous research are not implemented.
 - Text and screenshot input are supported; PDF input/export is not. Homepage screenshot input accepts PNG/JPEG up to 1 MB; OCR supports Arabic, English, and automatic detection and always needs review.
 - Accounts have no password reset, email verification, credential deletion UI or collaboration. `/data` deletes research records; it retains account credentials. Browser-local inquiries are separate from account research and are not synchronized.

@@ -27,9 +27,9 @@ export function ServiceStatus() {
       <dt>Quran Foundation</dt><dd>{status.quranConfigured ? `Configured · ${status.quranEnvironment} · ${count('quran-foundation')} approved resources` : 'Credentials not configured'}{status.quranEnvironment === 'prelive' && ' · Testing is limited to surahs 1 and 2.'}</dd>
       <dt>Sunnah.com</dt><dd>{status.sunnahConfigured ? `Configured · ${count('sunnah')} approved resources` : 'API key not configured'}</dd>
       <dt>UmmahAPI</dt><dd>{`${count('ummah')} approved resources · anonymous access enabled${status.ummahConfigured ? ' · higher-limit key configured' : ''}`}</dd>
-      <dt>Shamela via Parse</dt><dd>{status.shamelaConfigured ? `Configured · ${count('shamela')} approved resources · bounded search and page retrieval` : 'API key not configured'}</dd>
-      <dt>Turath</dt><dd>Public API access; each request reports its actual result · {count('turath')} approved resources</dd>
-      <dt>OpenITI</dt><dd>{count('openiti')} approved resources · imported pending texts remain authenticated previews</dd>
+      <dt>Shamela via Parse</dt><dd>Outside current scope · blanket all-library approval disabled{status.shamelaConfigured ? ' · credentials remain configured but unused' : ''}</dd>
+      <dt>Turath</dt><dd>Adapter tested · 0 eligible resources · usage permission unresolved</dd>
+      <dt>OpenITI</dt><dd>{count('openiti')} eligible evidence resources · imported text is authenticated preview only</dd>
     </dl>
     {status.database === 'connected' && !status.approvedResources.length && <p className="error">No resources have been approved. Retrieval cannot return source evidence until the operator imports reviewed resource records.</p>}
     <p>Live retrieval accepts an explicit reference such as 2:255 or bukhari:1. Unreferenced Quran and hadith wording can use bounded quotation search when a compatible resource is approved; this is not a full-corpus search or an independent authenticity ruling.</p>

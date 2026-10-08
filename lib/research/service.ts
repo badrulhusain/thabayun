@@ -7,14 +7,18 @@ import { ids, statements, briefSections, comparisonSections } from './validation
 import { callModel } from '../claims/model';
 import { schemaObject } from '../claims/schemas';
 import type { ResearchEvidence } from './types';
+import { eligibleForEvidence, type Resource } from '../integrations/contracts';
+async function eligibleResources(filter: Record<string, unknown>) {
+  return (await Resources.find({ ...filter, approval: 'approved' }).lean() as unknown as Resource[]).filter(eligibleForEvidence);
+}
 export async function projectAccess(owner: string, id: string) {
   await connect(); const project = await Projects.findOne({ owner, id });
   if (!project) throw new ClaimsError('Research project not found.', 404); return project;
 }
 export async function approved(items: ResearchEvidence[], block = false) {
-  const resources = await Resources.find({ id: { $in: items.map(e => e.snapshot.resourceId) }, approval: 'approved' }).lean();
+  const resources = await eligibleResources({ id: { $in: items.map(e => e.snapshot.resourceId) } });
   const result = items.map(e => ({ ...e, approved: resources.some(r => r.id === e.snapshot.resourceId && r.edition === e.snapshot.edition && r.language === e.snapshot.language) }));
-  if (block && result.some(e => !e.approved)) throw new ClaimsError(`Generation blocked: approval revoked or metadata changed for ${result.filter(e => !e.approved).map(e => `${e.source.title} (${e.snapshot.locator})`).join(', ')}. Remove these items from the selection.`, 409);
+  if (block && result.some(e => !e.approved)) throw new ClaimsError(`Generation blocked: source review, usage permission, technical readiness, approval, or metadata changed for ${result.filter(e => !e.approved).map(e => `${e.source.title} (${e.snapshot.locator})`).join(', ')}. Remove these items from the selection.`, 409);
   return result;
 }
 export async function workspace(owner: string, projectId: string) {
@@ -26,14 +30,14 @@ export async function mutate(owner: string, body: Record<string, unknown>, signa
   await connect(); const action = string(body.action, 40);
   if (action === 'create') {
     const resourceIds = ids(body.resourceIds ?? [], 20), languages = ids(body.languages ?? [], 10);
-    if (await Resources.countDocuments({ id: { $in: resourceIds }, approval: 'approved' }) !== resourceIds.length) throw new ClaimsError('Scope requires approved resources.');
+    if ((await eligibleResources({ id: { $in: resourceIds } })).length !== resourceIds.length) throw new ClaimsError('Scope requires resources with approved source review, permitted usage, and retrieval-ready technical status.');
     return Projects.create({ id: randomUUID(), owner, title: string(body.title, 120), question: string(body.question), description: string(body.description ?? '', 4000, true), resourceIds, languages });
   }
   const projectId = string(body.projectId, 150), project = await projectAccess(owner, projectId);
   const filter = { owner, projectId };
   if (action === 'update') {
     const resourceIds = ids(body.resourceIds ?? [], 20), languages = ids(body.languages ?? [], 10);
-    if (await Resources.countDocuments({ id: { $in: resourceIds }, approval: 'approved' }) !== resourceIds.length) throw new ClaimsError('Scope requires approved resources.');
+    if ((await eligibleResources({ id: { $in: resourceIds } })).length !== resourceIds.length) throw new ClaimsError('Scope requires resources with approved source review, permitted usage, and retrieval-ready technical status.');
     await Projects.updateOne({ owner, id: projectId }, { $set: { title: string(body.title, 120), question: string(body.question), description: string(body.description ?? '', 4000, true), resourceIds, languages } });
   } else if (action === 'collect') {
     const evidenceIds = ids(body.evidenceIds), claimId = string(body.claimId, 100);

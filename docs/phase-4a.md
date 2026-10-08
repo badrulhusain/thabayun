@@ -18,7 +18,9 @@ Quran Arabic uses `type=arabic, providerId=text_uthmani, language=ar`. Translati
 | --- | --- | --- |
 | Quran Foundation | OAuth client credentials, token reuse/renewal, explicit surah:ayah and up to five verses, Arabic and individually approved translation/tafsir resources | No quotation search, no surrounding context; existence checked against returned verse_key |
 | Sunnah | Official collection:hadithNumber lookup, original returned body, language selection, named grade attribution | No quotation search; limited API coverage, no inference of fabrication |
-| Turath | Adapter boundary, honest unavailable outcome | No authorized contract verified; no guessed endpoints or live-looking fixtures |
+| Turath | Bounded official v3 search adapter tested against book 963 | Resource remains ineligible; reprint rights are reserved and permission for search, excerpt storage/display, and computational use is unclear |
+| OpenITI | Pinned local importer and authenticated preview | Candidate remains separate from public evidence approval; CC BY-NC-SA 4.0 and scholarly source review must be satisfied |
+| Shamela | Adapter and source data retained | Outside the current scope; wildcard `providerId: all` resource disabled |
 | Parse | Extraction adapter boundary, honest not-configured outcome | Existing key alone is insufficient. Configured API OpenAPI specification and permitted source mapping are missing; no requests or paid jobs run |
 
 Contracts inspected October 7, 2026: [Quran OAuth quickstart](https://api-docs.quran.com/docs/quickstart/), [verse-key API](https://api-docs.quran.com/docs/content_apis_versioned/4.0.0/verses-by-verse-key/), [Sunnah official OpenAPI](https://github.com/sunnah-com/api/blob/master/spec.v1.yml), [Parse canonical docs](https://docs.parse.bot/introduction), [Parse spec export](https://docs.parse.bot/api-reference/export/export-as-openapi-spec). Parse's configured generated API has its own methods and schemas; these must be inspected before implementing an executable adapter.
@@ -47,7 +49,8 @@ Provider requests are bounded to two attempts and eight-second timeouts, with bo
 - [ ] Live Atlas persistence/ownership smoke test (Atlas URI missing).
 - [ ] Live Quran/Sunnah smoke tests (credentials and reviewed resources missing).
 - [ ] Executable Parse integration (configured API spec and approved source mapping missing).
-- [ ] Authorized Turath integration (contract missing).
+- [ ] Turath book-specific usage permission for automated search, transient retrieval, stored/displayed excerpts, and any embeddings.
+- [ ] OpenITI candidate scholarly review and deployment-specific CC BY-NC-SA compliance decision.
 - [ ] Persistent screenshot object storage (service not established).
 
 Run `npm test`, `node tests/integrations.cjs`, `npm run lint`, `npm run typecheck`, `npm run build`. Existing browser tests written for Palmer fixture retrieval need updated configured/mock server-storage setup before they can validate the new live flow. Fixture success is not live integration success. Research notebooks/workspaces/exports are existing features and were not expanded in this phase.

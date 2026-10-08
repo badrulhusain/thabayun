@@ -2,14 +2,42 @@ import 'server-only';
 import mongoose, { Schema } from 'mongoose';
 import { ClaimsError } from '../claims/validation';
 const state = globalThis as typeof globalThis & { tabayyunMongo?: Promise<typeof mongoose> };
+async function dnsOverHttps(name: string, type: 'SRV' | 'TXT') {
+  const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(name)}&type=${type}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error(`DNS-over-HTTPS returned ${response.status}`);
+  const payload = await response.json() as { Status?: number; Answer?: { data?: unknown }[] };
+  if (payload.Status !== 0 || !Array.isArray(payload.Answer)) throw new Error(`DNS-over-HTTPS returned status ${payload.Status}`);
+  return payload.Answer.map(answer => String(answer.data ?? ''));
+}
+async function directAtlasUri(srvUri: string) {
+  const parsed = new URL(srvUri);
+  const srv = await dnsOverHttps(`_mongodb._tcp.${parsed.hostname}`, 'SRV');
+  const hosts = srv.map(record => record.trim().split(/\s+/).at(-1)?.replace(/\.$/, '')).filter((host): host is string => !!host);
+  if (!hosts.length) throw new Error('Atlas SRV lookup returned no hosts');
+  const txt = await dnsOverHttps(parsed.hostname, 'TXT');
+  const options = new URLSearchParams(txt.join('').replace(/^|$/g, '').replace(/\s*/g, ''));
+  for (const [key, value] of parsed.searchParams) options.set(key, value);
+  options.set('tls', 'true');
+  const credentials = parsed.username ? `${parsed.username}${parsed.password ? `:${parsed.password}` : ''}@` : '';
+  return `mongodb://${credentials}${hosts.join(',')}${parsed.pathname}?${options}`;
+}
+async function connectAtlas(uri: string) {
+  const options = { dbName: process.env.MONGODB_DB || 'tabayyun', serverSelectionTimeoutMS: 5000, maxPoolSize: 5 };
+  try { return await mongoose.connect(uri, options); }
+  catch (error) {
+    if (!/querySrv|EBADRESP|ENOTFOUND|EAI_AGAIN/.test(error instanceof Error ? error.message : String(error))) throw error;
+    await mongoose.disconnect();
+    return mongoose.connect(await directAtlasUri(uri), options);
+  }
+}
 export async function connect() {
   const uri = process.env.MONGODB_URI;
   if (!uri?.startsWith('mongodb+srv://')) throw new ClaimsError('Configure server-only MONGODB_URI with an Atlas connection URI.', 503, 'DATABASE_NOT_CONFIGURED');
-  state.tabayyunMongo ??= mongoose.connect(uri, { dbName: process.env.MONGODB_DB || 'tabayyun', serverSelectionTimeoutMS: 5000, maxPoolSize: 5 }).catch(() => { state.tabayyunMongo = undefined; throw new ClaimsError('Evidence storage is unavailable.', 503, 'DATABASE_UNAVAILABLE'); });
+  state.tabayyunMongo ??= connectAtlas(uri).catch(() => { state.tabayyunMongo = undefined; throw new ClaimsError('Evidence storage is unavailable.', 503, 'DATABASE_UNAVAILABLE'); });
   return state.tabayyunMongo;
 }
 const required = { type: String, required: true };
-const resourceSchema = new Schema({ id: required, provider: { ...required, enum: ['quran-foundation', 'sunnah', 'ummah', 'shamela', 'turath', 'openiti', 'parse'] }, providerId: required, type: { ...required, enum: ['arabic', 'translation', 'tafsir', 'word-by-word', 'mutashabihat', 'hadith', 'book'] }, title: required, language: required, url: required, author: String, translator: String, editor: String, edition: required, approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, reviewer: String, reviewedAt: Date, reviewNotes: String }, { timestamps: true });
+const resourceSchema = new Schema({ id: required, provider: { ...required, enum: ['quran-foundation', 'sunnah', 'ummah', 'shamela', 'turath', 'openiti', 'parse'] }, providerId: required, type: { ...required, enum: ['arabic', 'translation', 'tafsir', 'word-by-word', 'mutashabihat', 'hadith', 'book'] }, title: required, language: required, url: required, author: String, translator: String, editor: String, edition: required, approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, sourceReviewStatus: { type: String, enum: ['pending', 'approved', 'rejected', 'out-of-scope'] }, usagePermissionStatus: { type: String, enum: ['not-reviewed', 'permitted', 'noncommercial-only', 'restricted', 'unclear'] }, technicalStatus: { type: String, enum: ['not-ingested', 'preview-ready', 'retrieval-ready', 'disabled'] }, reviewer: String, reviewedAt: Date, reviewNotes: String }, { timestamps: true });
 resourceSchema.index({ id: 1 }, { unique: true }); resourceSchema.index({ provider: 1, providerId: 1, language: 1, edition: 1 }, { unique: true }); resourceSchema.index({ approval: 1, provider: 1 });
 const submissionSchema = new Schema({ owner: required, materialId: required, revision: Number, inputType: String, submittedText: String, extractedText: String, uploadReference: String, status: String }, { timestamps: true });
 submissionSchema.index({ owner: 1, materialId: 1, revision: 1 }, { unique: true });
@@ -34,6 +62,9 @@ const sourceBookSchema = new Schema({
   license: required, licenseUrl: required, attribution: required,
   originalPath: required, originalHeader: required,
   approval: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  sourceReviewStatus: { type: String, enum: ['pending', 'approved', 'rejected', 'out-of-scope'], default: 'pending' },
+  usagePermissionStatus: { type: String, enum: ['not-reviewed', 'permitted', 'noncommercial-only', 'restricted', 'unclear'], default: 'not-reviewed' },
+  technicalStatus: { type: String, enum: ['not-ingested', 'preview-ready', 'retrieval-ready', 'disabled'], default: 'not-ingested' },
 }, { timestamps: true });
 sourceBookSchema.index({ id: 1 }, { unique: true });
 sourceBookSchema.index({ provider: 1, providerId: 1, release: 1 }, { unique: true });

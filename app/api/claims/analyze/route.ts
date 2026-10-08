@@ -18,7 +18,7 @@ async function execute(request: Request) {
     if (ids.some(id => !retrieval.passages.some(p => p.id === id))) throw new ClaimsError("Evidence must be a canonical passage retrieved for this claim.");
     retrieval.passages = retrieval.passages.filter(p => ids.includes(p.id));
     const analysis = await analyzeClaim(claim, retrieval, callModel, request.signal);
-    await loadRetrieval(claim, session).then(current => { if (analysis.evidence.some(e => !current.passages.some(p => p.id === e.passageId))) throw new ClaimsError('Resource approval changed during analysis.'); });
+    await loadRetrieval(claim, session).then(current => { if (analysis.evidence.some(e => !current.passages.some(p => p.id === e.passageId))) throw new ClaimsError('Resource eligibility or metadata changed during analysis.'); });
     await saveAnalysis(session, analysis);
     return Response.json({ analysis });
   } catch (error) { return failure(error); }

@@ -1,10 +1,23 @@
 export type Provider = 'quran-foundation' | 'sunnah' | 'ummah' | 'shamela' | 'turath' | 'openiti' | 'parse';
 export type Outcome = 'success' | 'no_match' | 'unavailable' | 'error' | 'unsupported' | 'not_configured';
-export type Resource = { id: string; provider: Provider; providerId: string; type: 'arabic' | 'translation' | 'tafsir' | 'word-by-word' | 'mutashabihat' | 'hadith' | 'book'; title: string; language: string; url: string; author?: string; translator?: string; editor?: string; edition: string; approval: 'pending' | 'approved' | 'rejected'; reviewer?: string; reviewedAt?: Date; reviewNotes?: string };
+export type SourceReviewStatus = 'pending' | 'approved' | 'rejected' | 'out-of-scope';
+export type UsagePermissionStatus = 'not-reviewed' | 'permitted' | 'noncommercial-only' | 'restricted' | 'unclear';
+export type TechnicalStatus = 'not-ingested' | 'preview-ready' | 'retrieval-ready' | 'disabled';
+export type Resource = { id: string; provider: Provider; providerId: string; type: 'arabic' | 'translation' | 'tafsir' | 'word-by-word' | 'mutashabihat' | 'hadith' | 'book'; title: string; language: string; url: string; author?: string; translator?: string; editor?: string; edition: string; approval: 'pending' | 'approved' | 'rejected'; sourceReviewStatus?: SourceReviewStatus; usagePermissionStatus?: UsagePermissionStatus; technicalStatus?: TechnicalStatus; reviewer?: string; reviewedAt?: Date; reviewNotes?: string };
 export type Reference = { kind: 'quran'; surah: number; start: number; end: number } | { kind: 'hadith'; collection: string; number: string };
 export type Evidence = { resourceId: string; provider: Provider; originalText: string; normalizedText: string; locator: string; structuredLocator?: Reference; sourceUrl: string; sourceTitle?: string; language: string; translationIdentity: string; author?: string; edition: string; context?: string; grades: { authority: string; grade: string }[]; limitations: string[]; retrievedAt: string };
 export type ProviderResult = { outcome: Outcome; evidence: Evidence[]; limitations: string[]; attempts: number };
 export interface Adapter { capabilities: { referenceLookup: boolean; quotationSearch: boolean; contextRetrieval: boolean; bookSearch: boolean }; retrieve(resource: Resource, reference?: Reference, quotation?: string): Promise<ProviderResult> }
+// Book providers need three independent decisions. Non-book providers retain the
+// existing approval gate until their records are migrated to the same model.
+export function eligibleForEvidence(resource: Pick<Resource, 'provider' | 'approval' | 'type' | 'sourceReviewStatus' | 'usagePermissionStatus' | 'technicalStatus'>) {
+  if (resource.approval !== 'approved') return false;
+  if (resource.provider === 'shamela') return false;
+  if (resource.type !== 'book') return true;
+  return resource.sourceReviewStatus === 'approved'
+    && resource.usagePermissionStatus === 'permitted'
+    && resource.technicalStatus === 'retrieval-ready';
+}
 export function normalize(text: string) { return text.normalize('NFC').trim().replace(/\s+/gu, ' '); }
 // Explicit numeric references only; provider validates actual verse existence.
 export function parseReference(text: string): Reference | undefined {

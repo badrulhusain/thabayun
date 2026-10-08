@@ -7,6 +7,7 @@ const { quran, sunnah, ummah, shamela, turath, parse } = require('../lib/integra
 const { arabicSearchQueries, hasArabic } = require('../lib/integrations/query-planner.ts');
 const { requestJson } = require('../lib/integrations/request.ts');
 const { parseReference, comparison } = require('../lib/integrations/contracts.ts');
+const { rankLocalBookCandidates } = require('../lib/integrations/local-books.ts');
 Module._load = load;
 const resource = { id: 'fixture-quran', provider: 'quran-foundation', providerId: 'text_uthmani', type: 'arabic', title: 'Synthetic fixture', language: 'ar', edition: 'fixture-only', url: 'https://quran.com', approval: 'approved' };
 async function main() {
@@ -21,6 +22,9 @@ async function main() {
     });
     assert.deepEqual(planned, ['اطلبوا العلم ولو بالصين']);
     assert.throws(() => parseReference('2:1-10')); assert.throws(() => parseReference('115:1'));
+    const fiqhQuery = '\u0648\u0644\u0627 \u064a\u0635\u062d \u0628\u064a\u0639 \u0645\u0627 \u0644\u0627 \u064a\u0642\u062f\u0631 \u0639\u0644\u0649 \u062a\u0633\u0644\u064a\u0645\u0647';
+    const fiqhNear = '\u0648\u064a\u0634\u062a\u0631\u0637 \u0627\u064a\u0636\u0627 \u0642\u062f\u0631\u0629 \u062a\u0633\u0644\u064a\u0645\u0647 \u0641\u0644\u0627 \u064a\u0635\u062d \u0628\u064a\u0639 \u0622\u0628\u0642 \u0648\u0636\u0627\u0644';
+    assert.deepEqual(rankLocalBookCandidates(fiqhQuery, [{ id: 'near', normalizedText: fiqhNear, sequence: 2 }, { id: 'unrelated', normalizedText: '\u062a\u0633\u0644\u064a\u0645 \u0627\u0644\u0635\u0644\u0627\u0629', sequence: 1 }]).map(item => item.id), ['near']);
     global.fetch = async () => { throw new Error('Out-of-coverage lookup must not call the provider'); };
     process.env.QF_ENV = 'prelive';
     const outside = await quran.retrieve(resource, parseReference('49:13'));

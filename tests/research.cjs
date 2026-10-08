@@ -28,7 +28,7 @@ function model(initial = []) {
     async findOneAndUpdate(f,u) { const row = rows.find(r => matches(r,f)); if (!row) return null; update(row,u); return doc(row); },
     async deleteOne(f) { const i = rows.findIndex(r => matches(r,f)); if (i >= 0) rows.splice(i,1); } };
 }
-const resource = { id: 'fixture-resource', approval: 'approved', edition: 'fixture-edition', language: 'ar', title: 'SYNTHETIC resource' };
+const resource = { id: 'fixture-resource', type: 'arabic', approval: 'approved', edition: 'fixture-edition', language: 'ar', title: 'SYNTHETIC resource' };
 const snapshots = [1,2,3].map(n => ({ id: `fixture-evidence-${n}`, resourceId: resource.id, contentHash: `immutable-version-${n}`, originalText: 'نَصٌّ تَجْرِيبِيٌّ '.repeat(80), context: 'SYNTHETIC context', locator: `fixture:${n}`, sourceUrl: 'https://example.org/fixture', edition: resource.edition, language: resource.language, retrievedAt: new Date().toISOString() }));
 const db = { connect: async () => {}, Resources: model([resource]), EvidenceRecords: model(snapshots), Claims: model([{ owner: 'fixture-owner', claimId: 'fixture-claim', claim: { statement: 'SYNTHETIC proposition' }, revision: 1 }]), Retrievals: model([{ owner: 'fixture-owner', claimId: 'fixture-claim', claimRevision: 1, run: { passages: snapshots.map(e => ({ id: e.id, source: { title: resource.title, sourceType: 'arabic', edition: resource.edition } })) } }]), Findings: model([{ owner: 'fixture-owner', claimId: 'fixture-claim', evidenceIds: snapshots.map(e => e.id), explanation: 'SYNTHETIC finding' }]) };
 const models = { ResearchProjects: model(), ProjectEvidence: model(), ResearchNotes: model(), Briefs: model(), Comparisons: model() };

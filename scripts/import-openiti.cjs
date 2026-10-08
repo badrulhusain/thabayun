@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const mongoose = require('mongoose');
+const { connectAtlas } = require('./atlas-connection.cjs');
 if (fs.existsSync('.env.local')) process.loadEnvFile?.('.env.local');
 const VERSION = '0987ZaynDinMalibari.FathMucin.JK000228-ara1';
 const RELEASE = 'v2025.1.9';
@@ -30,13 +31,14 @@ async function main() {
   if (!process.env.MONGODB_URI?.startsWith('mongodb+srv://')) throw new Error('Atlas MONGODB_URI required');
   const original = fs.readFileSync(sourcePath, 'utf8');
   const { originalHeader, passages } = parse(original);
-  await mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB || 'tabayyun', serverSelectionTimeoutMS: 8000 });
+  await connectAtlas(mongoose, process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB || 'tabayyun', serverSelectionTimeoutMS: 12000 });
   const books = mongoose.connection.collection('sourceBooks'), pages = mongoose.connection.collection('sourcePassages'), resources = mongoose.connection.collection('resources');
-  const book = { id: `openiti:${VERSION}`, provider: 'openiti', providerId: VERSION, title: 'فتح المعين بشرح قرة العين', author: 'زين الدين بن عبد العزيز المليباري', language: 'ar', edition: 'بيروت: دار الفكر (year not supplied in OpenITI metadata)', release: RELEASE, commit: COMMIT, sourceUrl, metadataUrl, license: 'CC BY-NC-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', attribution: `OpenITI ${RELEASE}, ${VERSION}; source library identifier JK000228.`, originalPath: sourcePath.replaceAll('\\', '/'), originalHeader, approval: 'pending', contentHash: crypto.createHash('sha256').update(original).digest('hex'), updatedAt: new Date() };
+  const governance = { approval: 'pending', sourceReviewStatus: 'pending', usagePermissionStatus: 'noncommercial-only', technicalStatus: 'preview-ready' };
+  const book = { id: `openiti:${VERSION}`, provider: 'openiti', providerId: VERSION, title: 'فتح المعين بشرح قرة العين', author: 'زين الدين بن عبد العزيز المليباري', language: 'ar', edition: 'بيروت: دار الفكر (year not supplied in OpenITI metadata)', release: RELEASE, commit: COMMIT, sourceUrl, metadataUrl, license: 'CC BY-NC-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', attribution: `OpenITI ${RELEASE}, ${VERSION}; source library identifier JK000228.`, originalPath: sourcePath.replaceAll('\\', '/'), originalHeader, ...governance, contentHash: crypto.createHash('sha256').update(original).digest('hex'), updatedAt: new Date() };
   await books.createIndex({ id: 1 }, { unique: true }); await pages.createIndex({ id: 1 }, { unique: true }); await pages.createIndex({ bookId: 1, sequence: 1 }, { unique: true });
   await books.updateOne({ id: book.id }, { $set: book, $setOnInsert: { createdAt: new Date() } }, { upsert: true });
   await pages.deleteMany({ bookId: book.id }); if (passages.length) await pages.insertMany(passages);
-  await resources.updateOne({ id: book.id }, { $set: { id: book.id, provider: 'openiti', providerId: VERSION, type: 'book', title: book.title, language: 'ar', url: sourceUrl, author: book.author, edition: book.edition, approval: 'pending', updatedAt: new Date() }, $setOnInsert: { createdAt: new Date() } }, { upsert: true });
-  console.log(JSON.stringify({ imported: book.id, passages: passages.length, approval: 'pending', release: RELEASE, commit: COMMIT, hash: book.contentHash }));
+  await resources.updateOne({ id: book.id }, { $set: { id: book.id, provider: 'openiti', providerId: VERSION, type: 'book', title: book.title, language: 'ar', url: sourceUrl, author: book.author, edition: book.edition, ...governance, updatedAt: new Date() }, $setOnInsert: { createdAt: new Date() } }, { upsert: true });
+  console.log(JSON.stringify({ imported: book.id, passages: passages.length, ...governance, release: RELEASE, commit: COMMIT, license: book.license, hash: book.contentHash }));
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : error); process.exitCode = 1; }).finally(() => mongoose.disconnect());

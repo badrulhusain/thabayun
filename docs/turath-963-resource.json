@@ -1,0 +1,18 @@
+[
+  {
+    "id": "turath-963-ar",
+    "provider": "turath",
+    "providerId": "963",
+    "type": "book",
+    "title": "إعانة الطالبين على حل ألفاظ فتح المعين",
+    "author": "أبو بكر (المشهور بالبكري) عثمان بن محمد شطا الدمياطي الشافعي (ت ١٣١٠هـ)",
+    "language": "ar",
+    "edition": "دار الفكر للطباعة والنشر والتوريع؛ الطبعة: الأولى، ١٤١٨ هـ - ١٩٩٧ م",
+    "url": "https://app.turath.io/book/963",
+    "approval": "pending",
+    "sourceReviewStatus": "pending",
+    "usagePermissionStatus": "unclear",
+    "technicalStatus": "retrieval-ready",
+    "reviewNotes": "Provider copyright-page text states: جميع حقوق إعادة الطبع محفوظة للناشر. Other intended uses require separate permission clarification."
+  }
+]

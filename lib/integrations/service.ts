@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { Claim, Material, RetrievalRun, RetrievedPassage, AnalysisRun } from '../types';
 import { ClaimsError } from '../claims/validation';
 import { adapters } from './providers';
-import { parseReference, comparison, type Resource, type Evidence } from './contracts';
+import { parseReference, comparison, eligibleForEvidence, type Resource, type Evidence } from './contracts';
 import { connect, Resources, Submissions, Claims, EvidenceRecords, Attempts, Retrievals, Findings } from './database';
 import { arabicSearchQueries, hasArabic } from './query-planner';
 function evidenceScore(query: string, text: string) {
@@ -31,22 +31,23 @@ export async function retrieveApproved(claim: Claim, owner: string, material?: M
   const providers = reference?.kind === 'quran' ? ['quran-foundation', 'ummah'] : reference?.kind === 'hadith' ? ['sunnah', 'ummah'] : undefined;
   const quranQuotationScope = { provider: { $in: ['quran-foundation', 'ummah'] }, type: { $in: ['arabic', 'translation'] } };
   const hadithQuotationScope = { provider: 'ummah', type: 'hadith' };
-  const shamelaQuotationScope = { provider: 'shamela', type: 'book' };
-  const quotationScope = claim.type === 'Hadith quotation or attribution' ? { $or: [hadithQuotationScope, shamelaQuotationScope] }
+  const bookQuotationScope = { provider: { $in: ['shamela', 'turath', 'openiti'] }, type: 'book' };
+  const quotationScope = claim.type === 'Hadith quotation or attribution' ? { $or: [hadithQuotationScope, bookQuotationScope] }
     : claim.type === 'Quran quotation or attribution' ? quranQuotationScope
-    : claim.type === 'Religious interpretation' ? { $or: [hadithQuotationScope, quranQuotationScope, shamelaQuotationScope] }
-    : { provider: { $in: ['shamela', 'turath', 'openiti'] }, type: 'book' };
+    : claim.type === 'Religious interpretation' ? { $or: [hadithQuotationScope, quranQuotationScope, bookQuotationScope] }
+    : bookQuotationScope;
   const resourceFilter = { approval: 'approved', ...(providers ? { provider: { $in: providers }, ...(reference?.kind === 'hadith' ? { providerId: reference.collection } : {}) } : quotationScope) };
   let resources = await Resources.find(resourceFilter).limit(reference ? 8 : 24).lean() as unknown as Resource[];
+  resources = resources.filter(eligibleForEvidence);
   if (!reference && claim.type === 'Religious interpretation') {
     const hadith = prioritizeAllCollection(resources.filter(r => r.provider === 'ummah' && r.type === 'hadith')).slice(0, 3);
     const quran = resources.filter(r => ['arabic', 'translation'].includes(r.type)).slice(0, 3);
-    const books = prioritizeAllCollection(resources.filter(r => r.provider === 'shamela' && r.type === 'book')).slice(0, 2);
+    const books = prioritizeAllCollection(resources.filter(r => r.type === 'book')).slice(0, 2);
     resources = [...hadith, ...quran, ...books];
   } else resources = prioritizeAllCollection(resources).slice(0, 8);
   const applicable = resources.filter(r => reference ? providers!.includes(r.provider) && (reference.kind !== 'hadith' || r.providerId === reference.collection) : true);
   const passages: RetrievedPassage[] = [], limitations: string[] = [], attempts: NonNullable<RetrievalRun['attempts']> = [];
-  if (!applicable.length) { limitations.push('No applicable approved resources. A reviewer must approve individual resources before retrieval.'); attempts.push({ provider: 'resources', outcome: 'not_configured', limitations: ['Resource approval required.'] }); }
+  if (!applicable.length) { limitations.push('No applicable eligible resources. Book resources require separate approval, scholarly source review, usage permission, and retrieval-ready status.'); attempts.push({ provider: 'resources', outcome: 'not_configured', limitations: ['Eligible resource required.'] }); }
   let expandedQuery = '';
   if (quotation && applicable.some(r => r.provider === 'shamela') && !hasArabic(quotation)) {
     try {
@@ -66,8 +67,9 @@ export async function retrieveApproved(claim: Claim, owner: string, material?: M
       const started = Date.now(), result = await adapters[r.provider].retrieve(r, lookup.reference, lookup.quotation);
       limitations.push(...result.limitations); attempts.push({ provider: r.provider, resource: r.title, outcome: result.outcome, limitations: result.limitations });
       await Attempts.create({ owner, claimId: claim.id, provider: r.provider, lookupType: lookup.type, reference: lookup.type === 'reference' ? JSON.stringify(reference) : '[quotation omitted]', durationMs: Date.now() - started, attempts: result.attempts, outcome: result.outcome });
-      // Recheck approval after every network lookup. No unapproved or revoked evidence is consumed.
-      if (!await Resources.exists({ id: r.id, approval: 'approved', updatedAt: (r as Resource & { updatedAt: Date }).updatedAt })) { limitations.push('Resource approval or metadata changed during retrieval.'); break; }
+      // Recheck all eligibility gates after every network lookup. No revoked or ineligible evidence is consumed.
+      const current = await Resources.findOne({ id: r.id, approval: 'approved', updatedAt: (r as Resource & { updatedAt: Date }).updatedAt }).lean() as unknown as Resource | null;
+      if (!current || !eligibleForEvidence(current)) { limitations.push('Resource review, usage permission, technical status, or metadata changed during retrieval.'); break; }
       for (const e of result.evidence.slice(0, 5)) {
         // Timestamp is excluded from content identity; changed text/context/grades create a new record.
         const versionHash = createHash('sha256').update(JSON.stringify({ ...e, retrievedAt: undefined })).digest('hex');
@@ -92,7 +94,7 @@ export async function loadRetrieval(claim: Claim, owner: string) {
   await connect(); const record = await Retrievals.findOne({ owner, claimId: claim.id, claimRevision: claim.revision }).sort({ createdAt: -1 });
   if (!record || JSON.stringify((await Claims.findOne({ owner, claimId: claim.id, revision: claim.revision }))?.claim) !== JSON.stringify(claim)) throw new ClaimsError('Retrieve this claim before analysis.', 403);
   const run = record.run as RetrievalRun;
-  const resources = await Resources.find({ id: { $in: run.passages.map(p => p.sourceId) }, approval: 'approved' }).lean();
+  const resources = (await Resources.find({ id: { $in: run.passages.map(p => p.sourceId) }, approval: 'approved' }).lean() as unknown as Resource[]).filter(eligibleForEvidence);
   run.passages = run.passages.filter(p => resources.some(r => r.id === p.sourceId && r.edition === p.source.edition && r.language === p.source.language));
   return run;
 }
