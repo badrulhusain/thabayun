@@ -181,7 +181,10 @@ export const ummah: Adapter = { capabilities: { ...capabilities, quotationSearch
       const e = base(r, string(text, 50000), key, `https://ummahapi.com/api/quran/surah/${surah}/ayah/${ayah}`);
       e.structuredLocator = { kind: 'quran', surah, start: ayah, end: ayah }; if (usedNearMatch) e.limitations.push('Candidate retrieved by a distinctive-token near-match search; compare the wording carefully.'); return e;
     });
-    return { outcome: evidence.length ? 'success' : 'no_match', evidence, attempts, limitations: usedNearMatch ? ['No exact quotation result; showing bounded translated-keyword or distinctive-token near-match candidates.'] : [] };
+    const noMatch = r.type === 'hadith'
+      ? ['No matching wording was found in this approved hadith collection. Absence does not establish that a report is fabricated or absent from other collections.']
+      : ['No matching wording was found in this approved Quran text or translation.'];
+    return { outcome: evidence.length ? 'success' : 'no_match', evidence, attempts, limitations: usedNearMatch ? ['No exact quotation result; showing bounded translated-keyword or distinctive-token near-match candidates.'] : evidence.length ? [] : noMatch };
   } catch (e) { return { outcome: e instanceof ProviderError ? e.outcome : 'error', evidence: [], attempts: e instanceof ProviderError ? e.attempts : 1, limitations: ['UmmahAPI failed or returned invalid evidence; no religious verdict follows.'] }; }
 } };
 export const turath: Adapter = { capabilities: { ...capabilities, referenceLookup: false, quotationSearch: true, contextRetrieval: true, bookSearch: true }, async retrieve(r, _ref, quotation) {

@@ -1,5 +1,5 @@
 import { supportResults, type AnalysisRun, type Claim, type EvidenceLink, type RetrievalRun } from "../types";
-import { compare } from "./comparison";
+import { compare, comparedQuotation } from "./comparison";
 import { ClaimsError, object, string } from "./validation";
 import { analysisSchema } from "./schemas";
 import type { ModelCall } from "./model";
@@ -25,7 +25,7 @@ export function validateAnalysis(output: unknown, claim: Claim, retrieval: Retri
   if (support === "Supported by retrieved evidence" && !evidence.some(e => e.relation === "supporting")) throw new ClaimsError("Supported finding lacks supporting evidence.", 422, "INVALID_CITATION");
   if (support === "Contradicted by retrieved evidence" && !data.evidence.some(value => { const v = object(value); return v.relation === "conflicting" && v.directConflict === true; })) throw new ClaimsError("Contradiction requires a directly conflicting cited passage.", 422, "INVALID_CITATION");
   const comparison = compare(claim, retrieval);
-  if (claim.quotation && comparison.quotation !== "Exact match" && data.quotationRelationship === "Possible paraphrase") {
+  if (comparedQuotation(claim, retrieval) && comparison.quotation !== "Exact match" && data.quotationRelationship === "Possible paraphrase") {
     if (!evidence.length) throw new ClaimsError("Paraphrase assessment lacks cited evidence.", 422, "INVALID_CITATION");
     comparison.quotation = "Possible paraphrase";
   }
@@ -38,8 +38,9 @@ export function validateAnalysis(output: unknown, claim: Claim, retrieval: Retri
 }
 export async function analyzeClaim(claim: Claim, retrieval: RetrievalRun, model: ModelCall, signal?: AbortSignal) {
   if (!retrieval.passages.length) throw new ClaimsError('Retrieve and select at least one approved source passage before analysis. Check the claim reference, source approval, and provider access. No model request was sent.', 422, 'NO_EVIDENCE');
+  const quotation = comparedQuotation(claim, retrieval);
   const result = await model({ task: "analyze", instructions: ANALYSIS_INSTRUCTIONS + " quotationRelationship may be Possible paraphrase only when cited evidence demonstrates a paraphrase relationship; otherwise use Uncertain or Not applicable. Application code determines exact wording and reference matches.",
-    data: { claim: { statement: claim.statement, excerpt: claim.excerpt, type: claim.type, quotation: claim.quotation, speaker: claim.speaker, reference: claim.reference },
+    data: { claim: { statement: claim.statement, excerpt: claim.excerpt, type: claim.type, quotation, speaker: claim.speaker, reference: claim.reference },
       evidence: retrieval.passages.map(p => ({ id: p.id, text: p.text, surroundingContext: p.surroundingContext ?? "", locator: p.locator, source: p.source })), coverage: retrieval.coverage }, schema: analysisSchema }, signal);
   try {
     const run = validateAnalysis(result.output, claim, retrieval, result.model);

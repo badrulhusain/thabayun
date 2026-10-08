@@ -58,7 +58,7 @@ export type RetrievalRun = {
   queries: { query: string; method: RetrievedPassage["method"] }[];
   collectionVersion: string; searchedAt: string; sourcesSearched: Source[];
   coverage: string; passages: RetrievedPassage[];
-  attempts?: { provider: string; outcome: string; limitations: string[] }[];
+  attempts?: { provider: string; resource?: string; outcome: string; limitations: string[] }[];
 };
 export const quotationResults = ["Exact match", "Wording differs", "Possible paraphrase", "Not located", "Not applicable", "Uncertain"] as const;
 export const referenceResults = ["Resolved and matches the cited passage", "Resolved but mismatched", "Not located", "Not supplied", "Uncertain"] as const;

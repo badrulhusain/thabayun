@@ -31,7 +31,7 @@ export function ServiceStatus() {
       <dt>OpenITI</dt><dd>{count('openiti')} approved resources · imported pending texts remain authenticated previews</dd>
     </dl>
     {status.database === 'connected' && !status.approvedResources.length && <p className="error">No resources have been approved. Retrieval cannot return source evidence until the operator imports reviewed resource records.</p>}
-    <p>Live retrieval currently needs an explicit reference such as 2:255 or bukhari:1. Unreferenced quotations and open research questions do not trigger a full-corpus search.</p>
+    <p>Live retrieval accepts an explicit reference such as 2:255 or bukhari:1. Unreferenced Quran and hadith wording can use bounded quotation search when a compatible resource is approved; this is not a full-corpus search or an independent authenticity ruling.</p>
     <p><Link href="/account">Sign in</Link> before collecting evidence into <Link href="/research">research projects</Link>.</p></>}
     <button className="secondary" disabled={busy} onClick={() => void refresh()}>{busy ? 'Checking…' : 'Refresh service status'}</button>
   </section>;

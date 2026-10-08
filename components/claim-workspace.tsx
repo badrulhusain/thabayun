@@ -142,12 +142,12 @@ export function ClaimWorkspace({ material }: { material: Material }) {
           <small>Material excerpt · characters {focusedClaim.start}–{focusedClaim.end}</small><blockquote dir="auto">{focusedClaim.excerpt}</blockquote>
           <p>Explicit quotation: {focusedClaim.quotation || "Not supplied"}<br />Attributed speaker: {focusedClaim.speaker || "Not supplied"}<br />Reference: {focusedClaim.reference || "Not supplied"}</p>
           <p>{PROVIDER_COVERAGE}</p>
-          {!focusedClaim.reference && !focusedClaim.quotation && <p>Use Edit claim to supply a reference such as 2:255, or enter the wording to search in Explicit quotation.</p>}
+          {!focusedClaim.reference && !focusedClaim.quotation && <p>This short religious excerpt can be used as a quotation search. For more precise retrieval, use Edit claim to identify it as Quran or hadith wording, or supply a reference such as 2:255 or bukhari:1.</p>}
           {!retrieval && <p>Select this claim and retrieve evidence before analysis.</p>}
           {retrieval && <>
             <h4>Sources searched</h4><p>{retrieval.coverage}</p><small>{retrieval.collectionVersion} · {new Date(retrieval.searchedAt).toLocaleString()}</small>
             <p>Wording comparison: {compare(focusedClaim, retrieval).quotation}. Reference: {compare(focusedClaim, retrieval).reference}. Wording differences may reflect different translations. Exact wording does not establish hadith authenticity.</p>
-            {retrieval.attempts?.map((a, i) => <p key={i} role="status">{a.provider}: {a.outcome.replaceAll('_', ' ')}. {a.limitations.join(' ')}</p>)}
+            {retrieval.attempts?.map((a, i) => <p key={i} role="status">{a.provider}{a.resource ? ` - ${a.resource}` : ''}: {a.outcome.replaceAll('_', ' ')}. {a.limitations.join(' ')}</p>)}
             <details><summary>Retrieval queries and methods</summary><ul>{retrieval.queries.map((q, i) => <li key={i}>{q.method}: {q.query}</li>)}</ul></details>
             <h4>{focusedClaim.reference ? "Exact-reference matches" : "Quotation matches"}</h4>
             {!retrieval.passages.length && <p>No matching passage was retrieved. Check the quotation or reference, resource approval, and provider status above.</p>}

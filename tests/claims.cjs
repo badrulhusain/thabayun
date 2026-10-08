@@ -17,6 +17,12 @@ const response = (support = "Supported by retrieved evidence", evidence = [{ pas
   support, evidence, quotationRelationship: "Uncertain", explanation: "TEST FIXTURE: the cited wording calls for patience and prayer.", limitations: ["TEST FIXTURE only"], unresolvedQuestions: ["Which edition?"], nextStep: "Inspect the original edition.",
 });
 async function main() {
+  const saying = "seek knowledge even from china";
+  const normalizedSaying = validateExtraction({ claims: [{ excerpt: saying, start: 0, end: saying.length, statement: saying,
+    type: "Religious interpretation", quotation: "", speaker: "", reference: "" }] }, saying,
+    { projectId: "fixture-project", materialId: "fixture-material", materialRevision: 1 });
+  assert.equal(normalizedSaying[0].quotation, saying, "a short whole-input religious saying remains searchable");
+  assert.equal(compare({ ...normalizedSaying[0], quotation: '' }, { ...retrieve(claim), passages: [], queries: [{ query: saying, method: 'exact-quotation' }] }).quotation, 'Not located');
   const run = retrieve(claim);
   assert.equal(compare(claim, run).quotation, "Exact match");
   assert.equal(compare(claim, run).reference, "Resolved and matches the cited passage");
